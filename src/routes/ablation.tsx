@@ -11,7 +11,7 @@ function AblationPage() {
   const [tick, setTick] = useState(0);
   const rows = useMemo(() => {
     void tick;
-    return runLadder(1000, track, 42 + tick);
+    return runLadder(640, track, 42 + tick);
   }, [track, tick]);
 
   return (

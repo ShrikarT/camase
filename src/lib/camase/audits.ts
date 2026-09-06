@@ -47,10 +47,10 @@ export function auditB(n = 90, J = 4): AuditResult {
   const stream = new CausalAtrous(J, Math.max(512, n + 8));
   let nChecked = 0;
   for (let t = 0; t < n; t++) {
-    const dStream = stream.step(y[t]);
+    const dStream = Array.from(stream.step(y[t]));
     const fresh = new CausalAtrous(J, Math.max(512, t + 16));
-    let dPrefix = new Float64Array(J);
-    for (let s = 0; s <= t; s++) dPrefix = fresh.step(y[s]);
+    let dPrefix: number[] = new Array(J).fill(0);
+    for (let s = 0; s <= t; s++) dPrefix = Array.from(fresh.step(y[s]));
     nChecked += J;
     for (let j = 0; j < J; j++) {
       if (dStream[j] !== dPrefix[j]) {
