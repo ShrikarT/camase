@@ -28,7 +28,8 @@ python3 -m camase --ablation --track A2 --n 2000
 python3 -m camase --track A2 --models M1,M2,M6,M7,M8,M9 --n 2000
 python3 -m camase --walkforward --n 2800
 python3 -m camase --pareto --n 1600
-python3 -m camase --track-b --csv data/btc_sample.csv
+python3 -m camase --fetch-btc --pages 3 --csv data/btc_usdt_1m.csv
+python3 scripts/reproduce_results.py
 ```
 
 ## Lab

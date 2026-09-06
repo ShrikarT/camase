@@ -52,34 +52,20 @@ Engine (Python `camase/` AND TypeScript `src/lib/camase/`):
 - [x] Deflated Sharpe helper (`metrics.deflated_sharpe`)
 - [x] Lab console, ablation, audits, paper pages
 - [x] Docs: plan.md, claude.md, agen_hanoff.md, README.md
-- [x] pytest green (6 tests: audits + Kalman)
+- [x] pytest green (18 tests)
 
-### Work left (do these, in this order)
-
-1. **M8 IMM** — 3-mode interacting multiple model (calm / normal / stress
-   Q-R pairs). Stay off the causal wavelet hot path. Register as `M8`.
-2. **M9 UKF** — unscented Kalman on the same IRW state. Register as `M9`.
-   Do not replace Joseph M6/M7.
-3. **Track B data plane** — CSV loader for BTC/USDT 1m bars
-   (`timestamp,open,high,low,close,volume`). Fallback synthetic BTC-like
-   path when no CSV is present. Hash the file. Never claim live Binance
-   unless a feed is actually wired.
-4. **Purged / embargoed walk-forward** — 60/20 expanding folds, embargo
-   = wavelet support L_4 = 106 bars (or warmup). Write trial log JSON.
-5. **Deflated Sharpe + bootstrap CIs** — run on the walk-forward trial
-   log, not on a single in-sample path.
-6. **Group-delay vs MA Pareto** — sweep matched moving-average windows
-   vs M6 group delay; report delay (bars) vs SNR / MSPE.
-7. **Filled Chapter-7 style result tables** — write
-   `results/track_a.json`, `results/ablation.json`,
-   `results/walkforward.json` from a real run (n≥2000 Track A).
-8. **Dashboard pages** for walk-forward + Track B + M8/M9 rows.
-9. **Tests** for IMM mixing weights, UKF sigma-point count, walk-forward
-   embargo (no train sample in test after purge), Track B loader.
-10. Push to `ShrikarT/major-project` via **GitHub connector**
-    (`github___push_files`) after each milestone. Authenticated user
-    must be `ShrikarT` (id 132975062). Do not use a local `git push`
-    from another account.
+- [x] M8 IMM
+- [x] M9 UKF
+- [x] Track B CSV loader + synthetic fallback
+- [x] Binance public 1m fetch (no key)
+- [x] Purged / embargoed walk-forward
+- [x] Deflated Sharpe + bootstrap CIs on the trial log
+- [x] Group-delay vs MA Pareto
+- [x] Committed `results/*.json`
+- [x] `/results` dashboard page
+- [x] Tests for IMM, UKF, walk-forward, Track B, Sharpe units
+- [ ] Multi-month BTC dump (optional; current file is ~3000 1m bars)
+- [ ] Thesis PDF / viva deck
 
 Out of scope unless the student asks: full thesis PDF rewrite, viva
 slides, live Binance websocket, Streamlit (web lab already exists).

@@ -1,102 +1,158 @@
 {
-  "source": "data/btc_sample.csv",
+  "source": "data/btc_usdt_1m.csv",
   "synthetic": false,
-  "sha256": "4f7853fcfe847a0afee1fb24039397d78762291457ad1e6de72557eeb1c17efb",
-  "n": 1500,
-  "note": "CSV is a labelled synthetic BTC-like path, not a Binance dump.",
+  "sha256": "86087d4b96f83a8b8d4b7547bcbbb6c9e2f475444d266862bd48536a533c99f0",
+  "n": 3000,
+  "note": "Real Binance dump.",
   "walkforward": {
-    "n": 1500,
+    "n": 3000,
     "warmup": 169,
     "l4": 106,
-    "n_folds": 1,
-    "n_trials": 3,
+    "n_folds": 2,
+    "n_trials": 6,
     "folds": [
       {
         "fold": 0,
         "train_start": 0,
-        "train_end": 900,
-        "test_start": 1069,
-        "test_end": 1318,
-        "embargo_end": 1424
+        "train_end": 1800,
+        "test_start": 1969,
+        "test_end": 2218,
+        "embargo_end": 2324
+      },
+      {
+        "fold": 1,
+        "train_start": 0,
+        "train_end": 2324,
+        "test_start": 2493,
+        "test_end": 2742,
+        "embargo_end": 2848
       }
     ],
     "trials": [
       {
         "fold": 0,
         "model": "M1",
-        "test_start": 1069,
-        "test_end": 1318,
+        "test_start": 1969,
+        "test_end": 2218,
         "purge": 169,
         "embargo": 106,
-        "mspe": 1.5215825229260275e-06,
-        "sharpe_net": -223.02890081602527,
-        "sharpe_gross": 40.28990009864503,
-        "max_dd_net": -0.07347772631533543,
-        "time_in_market": 0.570281124497992,
-        "n_trades": 83
+        "mspe": 7.561114406717983e-08,
+        "sharpe_net": -0.6132219336566925,
+        "sharpe_net_ann": -444.5753289834226,
+        "sharpe_gross": -0.02453128313650093,
+        "max_dd_net": -0.0710638113101447,
+        "time_in_market": 0.5421686746987951,
+        "n_trades": 70
       },
       {
         "fold": 0,
         "model": "M6",
-        "test_start": 1069,
-        "test_end": 1318,
+        "test_start": 1969,
+        "test_end": 2218,
         "purge": 169,
         "embargo": 106,
-        "mspe": 1.5407521962863648e-06,
-        "sharpe_net": -213.92532509305306,
-        "sharpe_gross": 42.17489013812654,
-        "max_dd_net": -0.07217608932544438,
-        "time_in_market": 0.5823293172690763,
-        "n_trades": 81
+        "mspe": 7.340851802201218e-08,
+        "sharpe_net": -0.5942344690280954,
+        "sharpe_net_ann": -430.8097445016622,
+        "sharpe_gross": -0.05281266278607136,
+        "max_dd_net": -0.06815600983596969,
+        "time_in_market": 0.5220883534136547,
+        "n_trades": 66
       },
       {
         "fold": 0,
         "model": "M7",
-        "test_start": 1069,
-        "test_end": 1318,
+        "test_start": 1969,
+        "test_end": 2218,
         "purge": 169,
         "embargo": 106,
-        "mspe": 1.5407521962863648e-06,
-        "sharpe_net": -57.16002708493729,
-        "sharpe_gross": 18.40174669320308,
-        "max_dd_net": -0.001626286831895584,
-        "time_in_market": 0.008032128514056224,
-        "n_trades": 2
+        "mspe": 7.340851802201218e-08,
+        "sharpe_net": -0.5942344690280954,
+        "sharpe_net_ann": -430.8097445016622,
+        "sharpe_gross": -0.05281266278607136,
+        "max_dd_net": -0.06815600983596969,
+        "time_in_market": 0.5220883534136547,
+        "n_trades": 66
+      },
+      {
+        "fold": 1,
+        "model": "M1",
+        "test_start": 2493,
+        "test_end": 2742,
+        "purge": 169,
+        "embargo": 106,
+        "mspe": 7.263440336090588e-08,
+        "sharpe_net": -0.5279346947964587,
+        "sharpe_net_ann": -382.74355129687376,
+        "sharpe_gross": 0.09420351301240192,
+        "max_dd_net": -0.06174261513522926,
+        "time_in_market": 0.5341365461847389,
+        "n_trades": 65
+      },
+      {
+        "fold": 1,
+        "model": "M6",
+        "test_start": 2493,
+        "test_end": 2742,
+        "purge": 169,
+        "embargo": 106,
+        "mspe": 7.347284887900487e-08,
+        "sharpe_net": -0.5666045102764355,
+        "sharpe_net_ann": -410.77850079097254,
+        "sharpe_gross": 0.03305557634115562,
+        "max_dd_net": -0.06800198907849185,
+        "time_in_market": 0.5220883534136547,
+        "n_trades": 69
+      },
+      {
+        "fold": 1,
+        "model": "M7",
+        "test_start": 2493,
+        "test_end": 2742,
+        "purge": 169,
+        "embargo": 106,
+        "mspe": 7.347284887900487e-08,
+        "sharpe_net": -0.5666045102764355,
+        "sharpe_net_ann": -410.77850079097254,
+        "sharpe_gross": 0.03305557634115562,
+        "max_dd_net": -0.06800198907849185,
+        "time_in_market": 0.5220883534136547,
+        "n_trades": 69
       }
     ],
     "summary": [
       {
         "model": "M1",
-        "mean_sharpe_net": -223.02890081602527,
+        "mean_sharpe_net": -0.5705783142265757,
         "sharpe_ci": {
-          "mean": null,
-          "lo": null,
-          "hi": null
+          "mean": -0.5705783142265757,
+          "lo": -0.6132219336566925,
+          "hi": -0.5279346947964587
         },
-        "deflated_sharpe": 5.305680374479916e-111,
-        "n_folds": 1
+        "deflated_sharpe": 1.216870121234344e-164,
+        "n_folds": 2
       },
       {
         "model": "M6",
-        "mean_sharpe_net": -213.92532509305306,
+        "mean_sharpe_net": -0.5804194896522654,
         "sharpe_ci": {
-          "mean": null,
-          "lo": null,
-          "hi": null
+          "mean": -0.5804194896522654,
+          "lo": -0.5942344690280954,
+          "hi": -0.5666045102764355
         },
-        "deflated_sharpe": 4.896258646874343e-111,
-        "n_folds": 1
+        "deflated_sharpe": 1.4728779850341822e-165,
+        "n_folds": 2
       },
       {
         "model": "M7",
-        "mean_sharpe_net": -57.16002708493729,
+        "mean_sharpe_net": -0.5804194896522654,
         "sharpe_ci": {
-          "mean": null,
-          "lo": null,
-          "hi": null
+          "mean": -0.5804194896522654,
+          "lo": -0.5942344690280954,
+          "hi": -0.5666045102764355
         },
-        "deflated_sharpe": 2.3499415602431057e-113,
-        "n_folds": 1
+        "deflated_sharpe": 1.4728779850341822e-165,
+        "n_folds": 2
       }
     ]
   }

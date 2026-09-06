@@ -34,10 +34,11 @@ def run_track_a(
         st = overlay_long_flat(run, path.log_obs, cfg.cost_rt_bp)
         row = asdict(sc)
         row["sharpe_net"] = st.sharpe_net
+        row["sharpe_net_ann"] = st.sharpe_net_ann
         row["max_dd_net"] = st.max_dd_net
         row["n_trades"] = st.n_trades
         rows.append(row)
-        econ.append({"model": name, "sharpe_net": st.sharpe_net, "tim": st.time_in_market})
+        econ.append({"model": name, "sharpe_net": st.sharpe_net, "sharpe_net_ann": st.sharpe_net_ann, "tim": st.time_in_market})
     return {
         "track": track,
         "n": n,

@@ -14,7 +14,8 @@
       "time_in_market": 1.0,
       "far_per_day": null,
       "mean_detect_delay": null,
-      "sharpe_net": -493.3255074425979,
+      "sharpe_net": -0.6804651582620755,
+      "sharpe_net_ann": -493.3255074425979,
       "max_dd_net": -0.8305799630213927,
       "n_trades": 730
     },
@@ -28,7 +29,8 @@
       "time_in_market": 1.0,
       "far_per_day": null,
       "mean_detect_delay": null,
-      "sharpe_net": -438.281566922977,
+      "sharpe_net": -0.6045406760855476,
+      "sharpe_net_ann": -438.281566922977,
       "max_dd_net": -0.7167656223301762,
       "n_trades": 622
     },
@@ -42,7 +44,8 @@
       "time_in_market": 1.0,
       "far_per_day": null,
       "mean_detect_delay": null,
-      "sharpe_net": -483.9775086070769,
+      "sharpe_net": -0.6675710601238668,
+      "sharpe_net_ann": -483.9775086070769,
       "max_dd_net": -0.7486062813092188,
       "n_trades": 654
     },
@@ -56,7 +59,8 @@
       "time_in_market": 0.4739423666462293,
       "far_per_day": 757.5229920294297,
       "mean_detect_delay": 0.0,
-      "sharpe_net": -291.0298448698138,
+      "sharpe_net": -0.4014300222888193,
+      "sharpe_net_ann": -291.0298448698138,
       "max_dd_net": -0.37320821057146975,
       "n_trades": 314
     },
@@ -70,7 +74,8 @@
       "time_in_market": 1.0,
       "far_per_day": null,
       "mean_detect_delay": null,
-      "sharpe_net": -495.7715027802007,
+      "sharpe_net": -0.6838390251702322,
+      "sharpe_net_ann": -495.7715027802007,
       "max_dd_net": -0.8329809881874789,
       "n_trades": 732
     },
@@ -84,7 +89,8 @@
       "time_in_market": 1.0,
       "far_per_day": null,
       "mean_detect_delay": null,
-      "sharpe_net": -493.3255074425979,
+      "sharpe_net": -0.6804651582620755,
+      "sharpe_net_ann": -493.3255074425979,
       "max_dd_net": -0.8305799630213927,
       "n_trades": 730
     }
@@ -92,32 +98,38 @@
   "econ": [
     {
       "model": "M1",
-      "sharpe_net": -493.3255074425979,
+      "sharpe_net": -0.6804651582620755,
+      "sharpe_net_ann": -493.3255074425979,
       "tim": 0.4916573971078977
     },
     {
       "model": "M2",
-      "sharpe_net": -438.281566922977,
+      "sharpe_net": -0.6045406760855476,
+      "sharpe_net_ann": -438.281566922977,
       "tim": 0.4838709677419355
     },
     {
       "model": "M6",
-      "sharpe_net": -483.9775086070769,
+      "sharpe_net": -0.6675710601238668,
+      "sharpe_net_ann": -483.9775086070769,
       "tim": 0.49356223175965663
     },
     {
       "model": "M7",
-      "sharpe_net": -291.0298448698138,
+      "sharpe_net": -0.4014300222888193,
+      "sharpe_net_ann": -291.0298448698138,
       "tim": 0.2286940527283875
     },
     {
       "model": "M8",
-      "sharpe_net": -495.7715027802007,
+      "sharpe_net": -0.6838390251702322,
+      "sharpe_net_ann": -495.7715027802007,
       "tim": 0.49025069637883006
     },
     {
       "model": "M9",
-      "sharpe_net": -493.3255074425979,
+      "sharpe_net": -0.6804651582620755,
+      "sharpe_net_ann": -493.3255074425979,
       "tim": 0.4916573971078977
     }
   ],

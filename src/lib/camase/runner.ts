@@ -31,7 +31,7 @@ export function runLab(n = 1400, track: TrackKind = "A2", seed = 42, gated = tru
 
 export function runLadder(n = 1100, track: TrackKind = "A2", seed = 42): Score[] {
   const path = generateHeston(n, track, seed);
-  const names: ModelName[] = ["M0", "M1", "M2", "M5", "M6", "M7", "M5'"];
+  const names: ModelName[] = ["M0", "M1", "M2", "M5", "M6", "M7", "M8", "M9", "M5'"];
   return names.map((name) => {
     const run = runNamed(name, path.price);
     const nis = (run as { nis?: number[] }).nis;
