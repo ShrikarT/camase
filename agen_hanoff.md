@@ -75,6 +75,7 @@ D1–D4 energy heatmap, shadow NIS vs χ², gate / FAR / SNR / delay).
 - Live Monitor page rebuilt to match the reference layout.
 - Group delay and FAR/day computed on the current run.
 - Gold bands mark jump / regime windows from the Heston generator.
+- Pushed `f791c40` Milestone 12 (Bloomberg-style live monitor).
 
 ---
 
