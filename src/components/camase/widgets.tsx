@@ -53,7 +53,7 @@ export function Spark({
       ? null
       : h - 4 - ((baseline - lo) / span) * (h - 8);
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-full w-full" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none">
       {fill && (
         <polygon
           points={`0,${h} ${pts} ${w},${h}`}
