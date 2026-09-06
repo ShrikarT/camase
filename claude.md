@@ -52,7 +52,10 @@ Engine (Python `camase/` AND TypeScript `src/lib/camase/`):
 - [x] Deflated Sharpe helper (`metrics.deflated_sharpe`)
 - [x] Lab console, ablation, audits, paper pages
 - [x] Docs: plan.md, claude.md, agen_hanoff.md, README.md
-- [x] pytest green (18 tests)
+- [x] pytest green (26 tests)
+- [x] Calibration log paper vs review2 (`results/calibration.json`)
+- [x] A1 gate FAR log
+- [x] Binance public 1m fetch (6000 bars hashed)
 
 - [x] M8 IMM
 - [x] M9 UKF

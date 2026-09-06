@@ -15,7 +15,7 @@ from camase.heston import generate_heston  # noqa: E402
 from camase.jsonutil import dump  # noqa: E402
 from camase.pareto import run_pareto  # noqa: E402
 from camase.trackb import load_track_b  # noqa: E402
-from camase.walkforward import run_walkforward  # noqa: E402
+from camase.calibration import far_on_null, run_calibration  # noqa: E402
 
 
 def main() -> None:
@@ -28,6 +28,8 @@ def main() -> None:
     wf = run_walkforward(path.price, path.log_obs, models=("M1", "M6", "M7", "M8"))
     dump(wf, out / "walkforward.json")
     dump(run_pareto(n=1600, track="A2"), out / "pareto.json")
+    dump(run_calibration(n=1600, seed=42), out / "calibration.json")
+    dump(far_on_null(n=2500, seed=3), out / "far_a1.json")
     csv = ROOT / "data" / "btc_usdt_1m.csv"
     sample = ROOT / "data" / "btc_sample.csv"
     bars = load_track_b(str(csv if csv.is_file() else sample))
