@@ -1,7 +1,7 @@
 # CLAUDE.md — Agent brief for CAMASE
 
-Read this file before touching code. It is the contract for every future agent
-session on this major project.
+Read this file AND `agen_hanoff.md` before touching code.
+This is the contract for every future agent session.
 
 Paper title: *Causality-Audited Multiscale Adaptive State Estimation for
 High-Frequency Financial Time Series* (v2.1, 19 Aug 2026).
@@ -9,24 +9,31 @@ High-Frequency Financial Time Series* (v2.1, 19 Aug 2026).
 Student: T. Shrikar (160123735056) with K. Sri Deepshikha, M. Mohith Srinivasa.
 Guide: Dr. Sai Krishna, Dept. of ECE. Batch 118.
 
+Repo (push here, as user ShrikarT via GitHub connector):
+https://github.com/ShrikarT/major-project
+
+Live preview must stay on `0.0.0.0:8080`. Do not add auth.
+
 ---
 
 ## Mission
 
-Ship a **working, audited estimator** and a **lab dashboard**, not a slide deck.
+Ship a **working, audited estimator** plus a **lab dashboard**.
 Every claim in the paper that can be executed must be executable here.
 
 If a change would make Audit A or B fail, do not merge it.
 
 ---
 
-## What to build (complete checklist)
+## Status snapshot (2026-09-06 evening)
 
-### Engine (Python `camase/` AND TypeScript `src/lib/camase/`)
+Phase 0 engine + Review-2 skeleton is **green**. Full Review-2 / Phase I
+artefacts listed under "Work left" are **not** all shipped. Next agent
+must continue from `agen_hanoff.md` Session 2 onward.
 
-Keep the two implementations numerically aligned (same filters, same Joseph
-update, same clip/EWMA). The dashboard runs the TS engine in the browser.
-The paper / pytest suite runs the Python engine.
+### Work already done
+
+Engine (Python `camase/` AND TypeScript `src/lib/camase/`):
 
 - [x] Causal à trous cascade, db4, J=4, streaming ring buffer
 - [x] Scale-local variance window k=64, E^H / E^L split
@@ -41,21 +48,41 @@ The paper / pytest suite runs the Python engine.
 - [x] Track A metrics: RMSE, SNR gain, mean NIS, detection delay, FAR
 - [x] Track B-style metrics: one-step MSPE, time-in-market, costed PnL
 - [x] Audits A, B as tests; Audit C as leaky-twin comparison
-- [x] Group-delay / delay-vs-accuracy helper
+- [x] Group-delay / delay-vs-accuracy helper (static gain only)
+- [x] Deflated Sharpe helper (`metrics.deflated_sharpe`)
+- [x] Lab console, ablation, audits, paper pages
+- [x] Docs: plan.md, claude.md, agen_hanoff.md, README.md
+- [x] pytest green (6 tests: audits + Kalman)
 
-### Dashboard (TanStack Start, port 8080)
+### Work left (do these, in this order)
 
-- [x] Lab console with live traces
-- [x] Ablation ladder view
-- [x] Audit runner view
-- [x] Paper / objectives / literature view
+1. **M8 IMM** — 3-mode interacting multiple model (calm / normal / stress
+   Q-R pairs). Stay off the causal wavelet hot path. Register as `M8`.
+2. **M9 UKF** — unscented Kalman on the same IRW state. Register as `M9`.
+   Do not replace Joseph M6/M7.
+3. **Track B data plane** — CSV loader for BTC/USDT 1m bars
+   (`timestamp,open,high,low,close,volume`). Fallback synthetic BTC-like
+   path when no CSV is present. Hash the file. Never claim live Binance
+   unless a feed is actually wired.
+4. **Purged / embargoed walk-forward** — 60/20 expanding folds, embargo
+   = wavelet support L_4 = 106 bars (or warmup). Write trial log JSON.
+5. **Deflated Sharpe + bootstrap CIs** — run on the walk-forward trial
+   log, not on a single in-sample path.
+6. **Group-delay vs MA Pareto** — sweep matched moving-average windows
+   vs M6 group delay; report delay (bars) vs SNR / MSPE.
+7. **Filled Chapter-7 style result tables** — write
+   `results/track_a.json`, `results/ablation.json`,
+   `results/walkforward.json` from a real run (n≥2000 Track A).
+8. **Dashboard pages** for walk-forward + Track B + M8/M9 rows.
+9. **Tests** for IMM mixing weights, UKF sigma-point count, walk-forward
+   embargo (no train sample in test after purge), Track B loader.
+10. Push to `ShrikarT/major-project` via **GitHub connector**
+    (`github___push_files`) after each milestone. Authenticated user
+    must be `ShrikarT` (id 132975062). Do not use a local `git push`
+    from another account.
 
-### Docs
-
-- [x] `plan.md` — architecture
-- [x] `claude.md` — this file
-- [x] `agen_hanoff.md` — work log
-- [x] `README.md` — how to run
+Out of scope unless the student asks: full thesis PDF rewrite, viva
+slides, live Binance websocket, Streamlit (web lab already exists).
 
 ---
 
@@ -65,7 +92,7 @@ The paper / pytest suite runs the Python engine.
 2. **Causal FIR only** on the live path. Periodic / symmetric extension is
    allowed solely inside leaky twins (Audit C).
 3. **Do not emit during warm-up.** Fabricating boundary samples is leakage.
-4. **Joseph form always.** Short-form P update is banned.
+4. **Joseph form always** on the linear KF path. Short-form P update is banned.
 5. **Gate on the shadow filter**, never on the adaptive NIS. Adaptation would
    cancel the very inconsistency the gate is meant to see.
 6. **No RMSE / SNR on real prices.** Those need latent truth (Track A only).
@@ -114,16 +141,60 @@ SNR gain (Track A only):
 G = 10 log10( Σ(y − p)² / Σ(p̂ − p)² )
 ```
 
+IMM mixing (M8): standard Blom / Bar-Shalom mixing. Three modes with
+fixed (R, σ_a²) = {(0.3 R0, 0.3 σa0), (R0, σa0), (3 R0, 3 σa0)}.
+Transition π_ii = 0.92, off-diagonal split equally.
+
+UKF (M9): n=2 state, 5 sigma points, α=1e-3, β=2, κ=0. Additive noise.
+Same F, Q, H, R as M1 unless adaptation is explicitly requested.
+
+Walk-forward: purge gap = warmup (169). Embargo after each test fold
+equals L_4 (106). No shuffling.
+
+---
+
+## Locked hyperparameters
+
+| Symbol | Value |
+|---|---|
+| wavelet | db4, L = 8 |
+| J, N, k | 4, 512, 64 |
+| warm-up | 169 samples |
+| M, persist | 60, 3-of-5 |
+| clip | 10× |
+| cost | 20 bp round-trip |
+| R0 | 1.2e-7 |
+| σ_a0 | 2.5e-7 |
+| χ² α | 0.005 |
+| CUSUM κ, h | 1.6, 36 |
+
 ---
 
 ## File map
 
 ```
 camase/                 Python research package
-tests/                  pytest: audits, wavelet, kalman
+  wavelet.py            causal + circular MODWT
+  kalman.py             Joseph IRW
+  ukf.py                unscented KF (M9)        ← add if missing
+  imm.py                3-mode IMM (M8)          ← add if missing
+  adaptation.py         two-sided EWMA
+  gate.py               shadow NIS / CUSUM
+  pipeline.py           M6 / M7 engine
+  models.py             ladder runners
+  heston.py             Track A generator
+  trackb.py             BTC CSV + fallback       ← add if missing
+  walkforward.py        purged WF                ← add if missing
+  metrics.py            RMSE / SNR / DSR
+  evaluation.py         Track A harness
+  strategy.py           long/flat + costs
+  audits.py             A / B / C
+  cli.py                entry
+tests/                  pytest
+results/                committed JSON tables
+data/                   sample BTC-like CSV
 src/lib/camase/         Browser-faithful port
 src/routes/             Dashboard pages
-src/components/camase/  Charts and chrome
 ```
 
 ---
@@ -132,12 +203,33 @@ src/components/camase/  Charts and chrome
 
 Web lab (preview): `npm run dev` via `/workspace/startup.sh`.
 
-Python audits:
-
 ```
 python3 -m pytest tests/ -q
-python3 -m camase.cli --track A2 --models M1,M2,M6,M7 --n 4000
+python3 -m camase --audits
+python3 -m camase --ablation --track A2 --n 2000
+python3 -m camase --track A2 --models M1,M2,M6,M7,M8,M9 --n 2000
+python3 -m camase --walkforward --n 4000
+python3 -m camase --track-b --csv data/btc_sample.csv
 ```
+
+---
+
+## How to push
+
+Use the connected GitHub tool as owner `ShrikarT`, repo `major-project`,
+branch `main`:
+
+```
+github___push_files
+  owner=ShrikarT
+  repo=major-project
+  branch=main
+  message="Milestone N: …"
+  files=[{path, content}, …]
+```
+
+Confirm `github___get_me` login is `ShrikarT` before pushing.
+Do not force-push. Do not rewrite milestone history.
 
 ---
 
@@ -149,3 +241,5 @@ python3 -m camase.cli --track A2 --models M1,M2,M6,M7 --n 4000
 - Do not add auth, accounts, or a database.
 - Do not strip Grok preview branding.
 - Do not bind the app to a port other than 8080.
+- Do not relax Audit A to a tolerance. Bitwise means bitwise.
+- Do not claim Track B is real Binance if the path is synthetic.
