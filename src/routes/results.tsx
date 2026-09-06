@@ -44,9 +44,10 @@ function ResultsPage() {
       <h2 className="mt-1 font-display text-3xl tracking-tight">Published runs</h2>
       <p className="mt-2 max-w-2xl text-sm text-fg-muted">
         Numbers come from the Python package, not the browser demo. Regenerated with
-        <span className="font-mono"> python3 -m camase</span>. Sharpe is minute-bar
-        annualised and will look extreme on short folds — read Deflated Sharpe and
-        time-in-market first.
+        <span className="font-mono"> python3 scripts/reproduce_results.py</span>.
+        <code className="font-mono">sharpe_net</code> is per bar.
+        Under paper defaults M6 does not reliably beat M2 on this Heston generator;
+        M8 (IMM) often does. That is reported, not hidden.
       </p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-4">

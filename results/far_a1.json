@@ -1,0 +1,9 @@
+{
+  "track": "A1",
+  "n": 2500,
+  "n_ready": 2331,
+  "n_hold": 0,
+  "hold_frac": 0.0,
+  "far_holds_per_day": 0.0,
+  "target_note": "Paper aims at ~1 false alarm per session; this is a raw HOLD count, not a session clock."
+}
