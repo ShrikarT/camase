@@ -80,6 +80,7 @@ D1–D4 energy heatmap, shadow NIS vs χ², gate / FAR / SNR / delay).
   thermostats, ρ/ν/CUSUM gauges, D1–D4 spectrogram, NIS+CUSUM tank,
   3-of-5 LED strip, innovation histogram, velocity oscillator,
   costed long/flat tape, F1–F4 function row.
+- Pushed `5838d94` Milestone 13.
 
 ---
 
