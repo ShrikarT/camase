@@ -1,0 +1,281 @@
+{
+  "note": "Paper defaults lock \u03bb=0.995, \u03b1=1, \u03b2=1. Review2 uses \u03bb=0.97, \u03b1=0.5, \u03b2=1.5. Neither profile is selected after looking at the test fold. On this generator M8 (IMM) often beats M6; that is reported, not hidden.",
+  "blocks": [
+    {
+      "track": "A2",
+      "profile": "paper",
+      "n": 1600,
+      "seed": 42,
+      "m6_beats_m2_snr": false,
+      "scores": [
+        {
+          "model": "M1",
+          "rmse_p": 0.0004172998349965426,
+          "rmse_v": 245.61973726493432,
+          "snr_db": 0.4935913308708448,
+          "mean_nis": 2.4250996752032243,
+          "mspe": 1.7484578049079644e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M2",
+          "rmse_p": 0.00039432663477442846,
+          "rmse_v": 249.07694460100925,
+          "snr_db": 1.124205622157099,
+          "mean_nis": 0.4878390298925928,
+          "mspe": 6.864918985452607e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M6",
+          "rmse_p": 0.0005524639229663579,
+          "rmse_v": 254.93739173315478,
+          "snr_db": -1.5443903990467822,
+          "mean_nis": 2.587862934268,
+          "mspe": 1.156091851951792e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M7",
+          "rmse_p": 0.0005524639229663579,
+          "rmse_v": 254.93739173315478,
+          "snr_db": -1.5443903990467822,
+          "mean_nis": 2.587862934268,
+          "mspe": 1.156091851951792e-06,
+          "time_in_market": 0.3556953179594689,
+          "far_per_day": 927.7987421383648,
+          "mean_detect_delay": 0.0,
+          "profile": "paper"
+        },
+        {
+          "model": "M8",
+          "rmse_p": 0.00037683965452028353,
+          "rmse_v": 245.83066507634095,
+          "snr_db": 1.3867740893626876,
+          "mean_nis": 0.8630390183916495,
+          "mspe": 1.110688042427906e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        }
+      ]
+    },
+    {
+      "track": "A2",
+      "profile": "review2",
+      "n": 1600,
+      "seed": 42,
+      "m6_beats_m2_snr": false,
+      "scores": [
+        {
+          "model": "M1",
+          "rmse_p": 0.0004172998349965426,
+          "rmse_v": 245.61973726493432,
+          "snr_db": 0.4935913308708448,
+          "mean_nis": 2.4250996752032243,
+          "mspe": 1.7484578049079644e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M2",
+          "rmse_p": 0.00039432663477442846,
+          "rmse_v": 249.07694460100925,
+          "snr_db": 1.124205622157099,
+          "mean_nis": 0.4878390298925928,
+          "mspe": 6.864918985452607e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M6",
+          "rmse_p": 0.0004375302577245988,
+          "rmse_v": 254.93739341760926,
+          "snr_db": 0.4815262131260375,
+          "mean_nis": 1.6233106242880164,
+          "mspe": 9.526963697235697e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M7",
+          "rmse_p": 0.0004375302577245988,
+          "rmse_v": 254.93739341760926,
+          "snr_db": 0.4815262131260375,
+          "mean_nis": 1.6233106242880164,
+          "mspe": 9.526963697235697e-07,
+          "time_in_market": 0.3556953179594689,
+          "far_per_day": 927.7987421383648,
+          "mean_detect_delay": 0.0,
+          "profile": "review2"
+        },
+        {
+          "model": "M8",
+          "rmse_p": 0.00037683965452028353,
+          "rmse_v": 245.83066507634095,
+          "snr_db": 1.3867740893626876,
+          "mean_nis": 0.8630390183916495,
+          "mspe": 1.110688042427906e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        }
+      ]
+    },
+    {
+      "track": "A3",
+      "profile": "paper",
+      "n": 1600,
+      "seed": 42,
+      "m6_beats_m2_snr": false,
+      "scores": [
+        {
+          "model": "M1",
+          "rmse_p": 0.00040922370272568006,
+          "rmse_v": 143.18905751583233,
+          "snr_db": 0.6622896672916918,
+          "mean_nis": 2.140508591695188,
+          "mspe": 1.5620134134887415e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M2",
+          "rmse_p": 0.00026774802840841993,
+          "rmse_v": 143.53926399409477,
+          "snr_db": 4.485993119741305,
+          "mean_nis": 0.3902728698735887,
+          "mspe": 4.6011201521630295e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M6",
+          "rmse_p": 0.0005117837113765127,
+          "rmse_v": 143.2649587349577,
+          "snr_db": -0.8802053365752085,
+          "mean_nis": 1.3793256364150632,
+          "mspe": 9.088847712579267e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M7",
+          "rmse_p": 0.0005117837113765127,
+          "rmse_v": 143.2649587349577,
+          "snr_db": -0.8802053365752085,
+          "mean_nis": 1.3793256364150632,
+          "mspe": 9.088847712579267e-07,
+          "time_in_market": 0.5807127882599581,
+          "far_per_day": 603.7735849056604,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        },
+        {
+          "model": "M8",
+          "rmse_p": 0.00036226943181591785,
+          "rmse_v": 143.2895350577686,
+          "snr_db": 1.728232450706576,
+          "mean_nis": 0.7473308118861304,
+          "mspe": 7.765495919457106e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "paper"
+        }
+      ]
+    },
+    {
+      "track": "A3",
+      "profile": "review2",
+      "n": 1600,
+      "seed": 42,
+      "m6_beats_m2_snr": false,
+      "scores": [
+        {
+          "model": "M1",
+          "rmse_p": 0.00040922370272568006,
+          "rmse_v": 143.18905751583233,
+          "snr_db": 0.6622896672916918,
+          "mean_nis": 2.140508591695188,
+          "mspe": 1.5620134134887415e-06,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M2",
+          "rmse_p": 0.00026774802840841993,
+          "rmse_v": 143.53926399409477,
+          "snr_db": 4.485993119741305,
+          "mean_nis": 0.3902728698735887,
+          "mspe": 4.6011201521630295e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M6",
+          "rmse_p": 0.00042289040786689313,
+          "rmse_v": 143.26497133625847,
+          "snr_db": 0.7769671625295299,
+          "mean_nis": 1.1725416589513302,
+          "mspe": 7.463867683116982e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M7",
+          "rmse_p": 0.00042289040786689313,
+          "rmse_v": 143.26497133625847,
+          "snr_db": 0.7769671625295299,
+          "mean_nis": 1.1725416589513302,
+          "mspe": 7.463867683116982e-07,
+          "time_in_market": 0.5807127882599581,
+          "far_per_day": 603.7735849056604,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        },
+        {
+          "model": "M8",
+          "rmse_p": 0.00036226943181591785,
+          "rmse_v": 143.2895350577686,
+          "snr_db": 1.728232450706576,
+          "mean_nis": 0.7473308118861304,
+          "mspe": 7.765495919457106e-07,
+          "time_in_market": 1.0,
+          "far_per_day": null,
+          "mean_detect_delay": null,
+          "profile": "review2"
+        }
+      ]
+    }
+  ]
+}

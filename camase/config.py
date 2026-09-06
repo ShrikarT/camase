@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Sequence
 
 
@@ -36,6 +36,7 @@ class CamaseConfig:
     roll_sigma_win: int = 64
     iae_win: int = 30
     seed: int = 42
+    profile: str = "paper"
 
     @property
     def support(self) -> list[int]:
@@ -47,3 +48,25 @@ class CamaseConfig:
 
 
 DEFAULT_CONFIG = CamaseConfig()
+
+# Faster EWMA + softer R exponent. Does not replace paper defaults.
+# Published so Review-2 can show the adaptor is not inert; M2/M8 may still win.
+REVIEW2_CONFIG = replace(
+    DEFAULT_CONFIG,
+    ewma_lambda=0.97,
+    alpha=0.5,
+    beta=1.5,
+    profile="review2",
+)
+
+PROFILES = {
+    "paper": DEFAULT_CONFIG,
+    "review2": REVIEW2_CONFIG,
+}
+
+
+def get_profile(name: str) -> CamaseConfig:
+    key = (name or "paper").lower()
+    if key not in PROFILES:
+        raise KeyError(f"unknown profile {name}; choose {sorted(PROFILES)}")
+    return PROFILES[key]
