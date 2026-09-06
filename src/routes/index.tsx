@@ -376,12 +376,12 @@ function Monitor() {
         </Box>
 
         {/* persistence LEDs */}
-        <Box code="3/5" title="persistence strip — red = ν>γ" className="lg:col-span-3">
+        <Box code="3/5" title="persistence strip — red when nu exceeds gamma" className="lg:col-span-3">
           <Leds flags={leds} />
           <p className="mt-2 text-[11px]">
             last 5: <span className={persistHits >= 3 ? "text-hold" : "text-trade"}>{persistHits}/5</span>
           </p>
-          <p className="text-[10px] text-[#8a8a8a]">alarm fires at 3-of-5 or CUSUM>H</p>
+          <p className="text-[10px] text-[#8a8a8a]">alarm fires at 3-of-5 or CUSUM above H</p>
         </Box>
 
         {/* residual hist */}
@@ -392,7 +392,7 @@ function Monitor() {
           </p>
         </Box>
 
-        <Box code="VEL" title="velocity state  ·  long when >0 and gate TRADE" className="lg:col-span-4">
+        <Box code="VEL" title="velocity state — long when positive and gate TRADE" className="lg:col-span-4">
           <div className="h-[80px]">
             <Spark ys={vel} color="#00e676" fill="#00e676" h={80} baseline={0} />
           </div>
