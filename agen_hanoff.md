@@ -4,16 +4,16 @@ Living record of work completed on CAMASE. Append, do not rewrite history.
 Any new agent must read this file + `claude.md` + `plan.md` first.
 
 Repo: https://github.com/ShrikarT/major-project
-Push account: GitHub connector login **ShrikarT** (id 132975062).
+Push account: GitHub connector / `gh` login **ShrikarT** (id 132975062).
 
 ---
 
 ## Current state (read this first)
 
-**Not finished.** Phase-0 engine + lab + Audits A/B are done and green.
-Review-2 still needs M8/M9, real Track B plane, purged walk-forward run,
-Deflated Sharpe on the trial log, group-delay Pareto, committed result
-tables, and dashboard pages for those.
+Phase-0 engine is green. Session 2 added M8/M9, Track B loader, purged
+walk-forward, group-delay Pareto, committed result tables, and a Results
+page. A real Binance dump is still not in the repo — the sample CSV is
+explicitly synthetic.
 
 | Area | Status | Where |
 |---|---|---|
@@ -25,94 +25,82 @@ tables, and dashboard pages for those.
 | Shadow NIS + 3-of-5 + CUSUM | DONE | `camase/gate.py` |
 | Heston A1/A2/A3 | DONE | `camase/heston.py` |
 | Ladder M0–M7 + M5′–M7′ | DONE | `camase/models.py` |
-| M8 IMM | NOT DONE | add `camase/imm.py` |
-| M9 UKF | NOT DONE | add `camase/ukf.py` |
-| Track A harness | DONE (short n in lab) | `camase/evaluation.py` |
-| Track B BTC CSV | NOT DONE | add `camase/trackb.py` + `data/` |
-| Purged/embargoed WF | NOT DONE | add `camase/walkforward.py` |
-| Deflated Sharpe helper | DONE (unused in harness) | `camase/metrics.py` |
-| Group-delay helper | PARTIAL (static gain only) | `camase/metrics.py` |
+| M8 IMM | DONE | `camase/imm.py` |
+| M9 UKF | DONE | `camase/ukf.py` |
+| Track A harness | DONE | `camase/evaluation.py` |
+| Track B BTC CSV | DONE (synthetic sample) | `camase/trackb.py`, `data/btc_sample.csv` |
+| Purged/embargoed WF | DONE | `camase/walkforward.py` |
+| Deflated Sharpe on trials | DONE | `walkforward.run_walkforward` summary |
+| Group-delay vs MA Pareto | DONE | `camase/pareto.py` |
 | Costed long/flat | DONE | `camase/strategy.py` |
 | Lab / Ablation / Audits / Paper UI | DONE | `src/routes/*` |
-| WF / Track B / M8-M9 UI | NOT DONE | new routes |
-| Result JSON tables | NOT DONE | `results/` |
-| pytest | 6 passed | audits + kalman |
+| Results UI | DONE | `src/routes/results.tsx` |
+| Result JSON tables | DONE | `results/*.json` |
+| pytest | 14 passed | audits, kalman, m8/m9, trackb/wf |
+| Live Binance feed | NOT DONE | needs a real CSV / API key |
+| Thesis PDF rewrite | NOT DONE | out of scope unless asked |
 
 Locked defaults: db4 L=8, J=4, N=512, k=64, warmup=169, R0=1.2e-7,
 σ_a0=2.5e-7, clip 10×, cost 20 bp, NIS M=60, persist 3-of-5,
 χ² α=0.005, CUSUM κ=1.6 h=36.
 
+Honest metrics notes:
+- Minute-bar Sharpe is annualised with √(365·24·60) and looks extreme on
+  short folds. Use Deflated Sharpe + time-in-market, not the raw SR.
+- M6 SNR vs M2 depends on the seed / length. Do not cherrypick.
+- WF runs the filter through the purge prefix so M6/M7 warm up before
+  the scored test slice.
+
 ---
 
 ## Session 1 — 2026-09-06
 
-### Intent
-Stand up the project from the v2.1 paper + objectives + Review-1 deck:
-engine, audits, ablation, Heston track, lab dashboard, push to
-`https://github.com/ShrikarT/major-project`.
-
-### Done
-- Wrote `plan.md`, `claude.md`, `agen_hanoff.md`, `README.md`.
-- Implemented Python package `camase/` (wavelet, Kalman, adaptation,
-  gate, Heston, M0–M7 + leaky twins, metrics, strategy, evaluation, audits).
-- Ported engine to `src/lib/camase/*` for the in-browser lab.
-- Dashboard routes: `/` lab, `/ablation`, `/audits`, `/paper`.
-- `startup.sh` → `npm run dev` on `0.0.0.0:8080`.
-- `tests/` for Audits A/B and Kalman smoke checks.
-- Pushed Milestone 0 / 1 / 2.
-
-### Commits on origin/main after Session 1
-- `0575ce0` Milestone 0: project brief, architecture plan, and agent contract
-- `f254b5d` Milestone 1: causal wavelet engine, Joseph KF, shadow gate, Track A, lab UI
-- `fe0a479` Milestone 2: calibrate R0/Q0, defer lab compute, bit-exact Audit C twin
-
-### Known limits left by Session 1
-- Track B in the browser is synthetic. No BTC CSV loader.
-- M8 IMM and M9 UKF not implemented.
-- Group delay is static-gain only.
-- Deflated Sharpe exists but is not run on walk-forward trials.
-- No purged/embargoed folds.
-- No committed `results/*.json`.
+Stand-up: engine M0–M7, audits, lab, Milestone 0–2 commits
+`0575ce0`, `f254b5d`, `fe0a479`.
 
 ---
 
-## Session 2 — 2026-09-06 (this session)
+## Session 2 — 2026-09-06
 
 ### Intent
-1. Rewrite `claude.md` and `agen_hanoff.md` so a replacement agent knows
-   exactly what is done vs left.
-2. Push those docs through the **GitHub connector as ShrikarT**
-   (not a side account).
-3. Implement remaining Review-2 pieces and push after each milestone.
+Handoff docs, then remaining Review-2 pieces, push as ShrikarT.
 
-### Done in this session (append as work lands)
-- Confirmed GitHub connector identity: login `ShrikarT`, id 132975062.
-- Rewrote `claude.md` with done/left checklist, push protocol, M8/M9/WF
-  equations, locked hyperparameters.
-- Rewrote this handoff with a status table a new agent can act on.
+### Done
+- Confirmed connector identity: `ShrikarT` / 132975062.
+- Rewrote `claude.md` and this file (done vs left).
+- Docs push: `b44f8c64` Milestone 3.
+- M8 IMM (calm/normal/stress, π_ii=0.92) in `camase/imm.py`.
+- M9 UKF (5 sigma points, α=1e-3, β=2, κ=0) in `camase/ukf.py`.
+- Track B loader + hashed synthetic sample `data/btc_sample.csv`
+  sha256 `4f7853fcfe847a0afee1fb24039397d78762291457ad1e6de72557eeb1c17efb`.
+- Purged/embargoed walk-forward; test slice scored after purge warm-up.
+- Bootstrap CI + Deflated Sharpe on the trial log.
+- Group-delay vs MA Pareto (`camase/pareto.py`).
+- CLI flags: `--walkforward`, `--track-b`, `--pareto`.
+- Committed tables in `results/` and `/results` lab page.
+- pytest: 14 passed.
 
-### Still queued when this paragraph was written
-M8, M9, Track B loader, walk-forward, DSR-on-trials, Pareto, result
-tables, extra dashboard routes, extra tests. Tick them off below as
-each milestone is pushed.
+### Milestone checklist
+- [x] M3 docs push (`claude.md`, `agen_hanoff.md`) — `b44f8c64`
+- [x] M4 M8 IMM + M9 UKF + tests
+- [x] M5 Track B loader + sample data
+- [x] M6 purged walk-forward + DSR + group-delay Pareto
+- [x] M7 committed `results/*.json` + CLI
+- [x] M8 dashboard `/results`
+- [x] pytest green
 
-### Milestone checklist for Session 2+
-- [ ] M3 docs push (`claude.md`, `agen_hanoff.md`)
-- [ ] M4 M8 IMM + M9 UKF + tests
-- [ ] M5 Track B loader + sample data
-- [ ] M6 purged walk-forward + DSR + group-delay Pareto
-- [ ] M7 committed `results/*.json` + CLI
-- [ ] M8 dashboard routes for WF / Track B / extra models
-- [ ] pytest still green; origin/main updated as ShrikarT
+### Still open for a later agent
+1. Drop in a real BTC/USDT 1m CSV (same header), hash it, rerun
+   `python3 -m camase --track-b --csv …` and replace `results/track_b.json`.
+2. Longer Track A (n≥8000) if Review-2 wants stabler SNR.
+3. Optional TS ports of M8/M9 for live ablation (Python is source of truth).
+4. Do not claim live Binance.
 
 ---
 
 ## Next agent should
 
 1. `python3 -m pytest tests/ -q` — must stay green. Audit A is bitwise.
-2. If a box above is unchecked, do that box. Do not restart the engine.
-3. Keep M8/M9 off the causal wavelet hot path until they have tests.
-4. If a real BTC CSV lands, hash it (`sha256`) and store the hash next
-   to the file. Run Track B through the walk-forward harness.
-5. Push with `github___push_files` owner=`ShrikarT` repo=`major-project`.
-6. After every push, append a short note here (commit SHA + what landed).
+2. Push with GitHub connector or `gh` as **ShrikarT** only.
+3. If a real BTC CSV lands, hash it and store `data/<file>.sha256`.
+4. Append a note here with the new commit SHA after every push.

@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, FileText, ShieldCheck, Table2 } from "lucide-react";
+import { Activity, FileText, ShieldCheck, Table2, LineChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Lab", icon: Activity },
   { to: "/ablation", label: "Ablation", icon: Table2 },
   { to: "/audits", label: "Audits", icon: ShieldCheck },
+  { to: "/results", label: "Results", icon: LineChart },
   { to: "/paper", label: "Paper", icon: FileText },
 ] as const;
 

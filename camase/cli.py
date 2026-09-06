@@ -1,10 +1,11 @@
-"""Command-line entry: audits, Track A, ablation."""
+"""Command-line entry: audits, Track A, ablation, walk-forward, Track B."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from .audits import run_all_audits
 from .evaluation import run_ablation, run_track_a
@@ -14,9 +15,14 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="camase")
     p.add_argument("--audits", action="store_true")
     p.add_argument("--track", default="A2")
-    p.add_argument("--models", default="M1,M2,M6,M7")
+    p.add_argument("--models", default="M1,M2,M6,M7,M8,M9")
     p.add_argument("--n", type=int, default=2000)
     p.add_argument("--ablation", action="store_true")
+    p.add_argument("--walkforward", action="store_true")
+    p.add_argument("--track-b", action="store_true")
+    p.add_argument("--pareto", action="store_true")
+    p.add_argument("--csv", default="")
+    p.add_argument("--out", default="")
     args = p.parse_args(argv)
 
     if args.audits:
@@ -25,6 +31,42 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Audit {r.name}: {flag} — {r.detail}")
             if not r.passed:
                 return 1
+        return 0
+
+    if args.walkforward:
+        from .heston import generate_heston
+        from .walkforward import run_walkforward
+
+        path = generate_heston(n=args.n, track=args.track)  # type: ignore[arg-type]
+        models = [m.strip() for m in args.models.split(",") if m.strip()]
+        out = run_walkforward(path.price, path.log_obs, models=models)
+        text = json.dumps(out, indent=2)
+        print(text)
+        if args.out:
+            Path(args.out).write_text(text)
+        return 0
+
+    if args.track_b:
+        from .trackb import load_track_b
+        from .walkforward import run_walkforward
+
+        bars = load_track_b(csv_path=args.csv or None, n=args.n)
+        models = [m.strip() for m in args.models.split(",") if m.strip()]
+        out = {
+            "source": bars.source,
+            "synthetic": bars.synthetic,
+            "sha256": bars.sha256,
+            "n": int(bars.close.size),
+            "walkforward": run_walkforward(bars.close, bars.log_price, models=models),
+        }
+        print(json.dumps(out, indent=2))
+        return 0
+
+    if args.pareto:
+        from .pareto import run_pareto
+
+        pts = run_pareto(n=args.n, track=args.track)
+        print(json.dumps(pts, indent=2))
         return 0
 
     if args.ablation:

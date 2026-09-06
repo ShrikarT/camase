@@ -296,6 +296,51 @@ def run_leaky_m6(prices: np.ndarray, cfg: CamaseConfig, gated: bool = False) -> 
     return ModelRun(tag, o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
 
 
+def run_m8_imm(prices: np.ndarray, cfg: CamaseConfig) -> ModelRun:
+    from .imm import IMMFilter
+
+    y = np.log(np.maximum(prices, 1e-12))
+    n = y.size
+    o = _alloc(n)
+    imm = IMMFilter(R0=cfg.R0, sigma_a0=cfg.sigma_a0, dt=cfg.dt)
+    for t in range(n):
+        pred = imm.last_pred
+        x = imm.step(float(y[t]))
+        o["p"][t] = x[0]
+        o["v"][t] = x[1]
+        o["R"][t] = float(np.dot(imm.mu, imm.mode_R))
+        o["sa"][t] = float(np.dot(imm.mu, imm.mode_sa))
+        o["nis"][t] = imm.last_nis
+        o["pred"][t] = pred
+        o["act"][t] = "TRADE"
+        o["rdy"][t] = t >= 5
+    return ModelRun("M8", o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
+
+
+def run_m9_ukf(prices: np.ndarray, cfg: CamaseConfig) -> ModelRun:
+    from .ukf import UnscentedIRW
+
+    y = np.log(np.maximum(prices, 1e-12))
+    n = y.size
+    o = _alloc(n)
+    ukf = UnscentedIRW()
+    F = transition(cfg.dt)
+    Q = process_cov(cfg.sigma_a0, cfg.dt)
+    for t in range(n):
+        pred = ukf.one_step_pred(F)
+        ukf.predict(F, Q)
+        ukf.update(float(y[t]), cfg.R0)
+        o["p"][t] = ukf.x[0]
+        o["v"][t] = ukf.x[1]
+        o["R"][t] = cfg.R0
+        o["sa"][t] = cfg.sigma_a0
+        o["nis"][t] = ukf.last_nis
+        o["pred"][t] = pred
+        o["act"][t] = "TRADE"
+        o["rdy"][t] = t >= 2
+    return ModelRun("M9", o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
+
+
 RUNNERS: dict[str, Callable[[np.ndarray, CamaseConfig], ModelRun]] = {
     "M0": run_m0,
     "M1": run_static_kf,
@@ -309,6 +354,8 @@ RUNNERS: dict[str, Callable[[np.ndarray, CamaseConfig], ModelRun]] = {
     "M5'": lambda p, c: run_m5_single_scale(p, c, leaky=True),
     "M6'": lambda p, c: run_leaky_m6(p, c, gated=False),
     "M7'": lambda p, c: run_leaky_m6(p, c, gated=True),
+    "M8": run_m8_imm,
+    "M9": run_m9_ukf,
 }
 
 

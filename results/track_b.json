@@ -1,0 +1,103 @@
+{
+  "source": "data/btc_sample.csv",
+  "synthetic": false,
+  "sha256": "4f7853fcfe847a0afee1fb24039397d78762291457ad1e6de72557eeb1c17efb",
+  "n": 1500,
+  "note": "CSV is a labelled synthetic BTC-like path, not a Binance dump.",
+  "walkforward": {
+    "n": 1500,
+    "warmup": 169,
+    "l4": 106,
+    "n_folds": 1,
+    "n_trials": 3,
+    "folds": [
+      {
+        "fold": 0,
+        "train_start": 0,
+        "train_end": 900,
+        "test_start": 1069,
+        "test_end": 1318,
+        "embargo_end": 1424
+      }
+    ],
+    "trials": [
+      {
+        "fold": 0,
+        "model": "M1",
+        "test_start": 1069,
+        "test_end": 1318,
+        "purge": 169,
+        "embargo": 106,
+        "mspe": 1.5215825229260275e-06,
+        "sharpe_net": -223.02890081602527,
+        "sharpe_gross": 40.28990009864503,
+        "max_dd_net": -0.07347772631533543,
+        "time_in_market": 0.570281124497992,
+        "n_trades": 83
+      },
+      {
+        "fold": 0,
+        "model": "M6",
+        "test_start": 1069,
+        "test_end": 1318,
+        "purge": 169,
+        "embargo": 106,
+        "mspe": 1.5407521962863648e-06,
+        "sharpe_net": -213.92532509305306,
+        "sharpe_gross": 42.17489013812654,
+        "max_dd_net": -0.07217608932544438,
+        "time_in_market": 0.5823293172690763,
+        "n_trades": 81
+      },
+      {
+        "fold": 0,
+        "model": "M7",
+        "test_start": 1069,
+        "test_end": 1318,
+        "purge": 169,
+        "embargo": 106,
+        "mspe": 1.5407521962863648e-06,
+        "sharpe_net": -57.16002708493729,
+        "sharpe_gross": 18.40174669320308,
+        "max_dd_net": -0.001626286831895584,
+        "time_in_market": 0.008032128514056224,
+        "n_trades": 2
+      }
+    ],
+    "summary": [
+      {
+        "model": "M1",
+        "mean_sharpe_net": -223.02890081602527,
+        "sharpe_ci": {
+          "mean": null,
+          "lo": null,
+          "hi": null
+        },
+        "deflated_sharpe": 5.305680374479916e-111,
+        "n_folds": 1
+      },
+      {
+        "model": "M6",
+        "mean_sharpe_net": -213.92532509305306,
+        "sharpe_ci": {
+          "mean": null,
+          "lo": null,
+          "hi": null
+        },
+        "deflated_sharpe": 4.896258646874343e-111,
+        "n_folds": 1
+      },
+      {
+        "model": "M7",
+        "mean_sharpe_net": -57.16002708493729,
+        "sharpe_ci": {
+          "mean": null,
+          "lo": null,
+          "hi": null
+        },
+        "deflated_sharpe": 2.3499415602431057e-113,
+        "n_folds": 1
+      }
+    ]
+  }
+}

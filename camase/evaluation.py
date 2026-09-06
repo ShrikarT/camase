@@ -14,7 +14,7 @@ from .models import RUNNERS, run_model
 from .strategy import overlay_long_flat
 
 
-DEFAULT_MODELS = ["M0", "M1", "M2", "M3", "M4", "M4b", "M5", "M6", "M7", "M5'", "M6'"]
+DEFAULT_MODELS = ["M0", "M1", "M2", "M3", "M4", "M4b", "M5", "M6", "M7", "M8", "M9", "M5'", "M6'"]
 
 
 def run_track_a(
