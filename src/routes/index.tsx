@@ -1,16 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import {
-  Area,
-  ComposedChart,
-  Line,
-  ReferenceArea,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useMemo, useState } from "react";
+import { DualSpark, Tape } from "@/components/camase/charts";
 import { Shell } from "@/components/camase/shell";
 import { Box, Gauge, Hist, Kv, Ladder, Leds, Spark } from "@/components/camase/widgets";
 import { DEFAULT_CONFIG } from "@/lib/camase/config";
@@ -19,58 +9,34 @@ import { LabPoint, runLab } from "@/lib/camase/runner";
 
 export const Route = createFileRoute("/")({ component: Monitor });
 
-type Band = { x1: number; x2: number };
-
-function clusters(series: LabPoint[], pred: (s: LabPoint) => boolean): Band[] {
-  const out: Band[] = [];
-  let a: number | null = null;
-  let last = 0;
-  for (const s of series) {
-    if (pred(s)) {
-      if (a === null) a = s.t;
-      last = s.t;
-    } else if (a !== null) {
-      if (last - a >= 1) out.push({ x1: a, x2: Math.max(last, a + 1) });
-      a = null;
-    }
-  }
-  if (a !== null) out.push({ x1: a, x2: last });
-  return out.slice(0, 10);
-}
-
 function heatColor(v: number) {
   const x = Math.min(1, Math.max(0, v));
-  return `rgb(${Math.round(20 + 235 * x)},${Math.round(40 + 140 * x)},${Math.round(0)})`;
+  return `rgb(${Math.round(20 + 235 * x)},${Math.round(40 + 140 * x)},0)`;
+}
+
+function runSafe(n: number, track: TrackKind, seed: number, gated: boolean) {
+  const t0 = typeof performance !== "undefined" ? performance.now() : 0;
+  try {
+    const series = runLab(n, track, seed, gated).series;
+    const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+    return { series, ms, err: "" };
+  } catch (e) {
+    return { series: [] as LabPoint[], ms: 0, err: e instanceof Error ? e.message : String(e) };
+  }
 }
 
 function Monitor() {
   const [track, setTrack] = useState<TrackKind>("A2");
   const [gated, setGated] = useState(true);
-  const [n, setN] = useState(760);
+  const [n, setN] = useState(520);
   const [seed, setSeed] = useState(42);
-  const [series, setSeries] = useState<LabPoint[] | null>(null);
-  const [ms, setMs] = useState<number | null>(null);
-  const [clock, setClock] = useState("");
 
-  useEffect(() => {
-    const tick = () => setClock(new Date().toISOString().slice(11, 19) + "Z");
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, []);
+  const pack = useMemo(() => runSafe(n, track, seed, gated), [n, track, seed, gated]);
+  const series = pack.series;
+  const ready = useMemo(() => series.filter((s) => s.ready), [series]);
+  const last = series[series.length - 1];
+  const prev = series.length > 2 ? series[series.length - 2] : last;
 
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      const t0 = performance.now();
-      setSeries(runLab(n, track, seed, gated).series);
-      setMs(performance.now() - t0);
-    }, 10);
-    return () => window.clearTimeout(id);
-  }, [n, track, seed, gated]);
-
-  const ready = series?.filter((s) => s.ready) ?? [];
-  const last = series?.[series.length - 1];
-  const prev = series && series.length > 2 ? series[series.length - 2] : last;
   const holds = ready.filter((s) => s.action === "HOLD").length;
   const tim = ready.length ? 1 - holds / ready.length : 0;
   const seF = ready.reduce((a, s) => a + (s.pHat - s.latent) ** 2, 0);
@@ -79,9 +45,9 @@ function Monitor() {
   const far = ready.length ? holds / Math.max(ready.length / 1440, 1e-9) : 0;
 
   let k1 = 0.18;
-  if (ready.length > 50) {
-    let num = 0,
-      den = 0;
+  if (ready.length > 40) {
+    let num = 0;
+    let den = 0;
     for (let i = 1; i < ready.length; i++) {
       const inn = ready[i].y - ready[i - 1].y;
       num += (ready[i].pHat - ready[i - 1].pHat) * inn;
@@ -91,35 +57,35 @@ function Monitor() {
   }
   const delay = (1 - k1) / k1;
 
-  const step = ready.length > 420 ? 2 : 1;
-  const tape = ready.filter((_, i) => i % step === 0).map((s, i, arr) => {
-    const p = i ? arr[i - 1] : s;
-    return {
-      t: s.t,
-      obs: s.y,
-      filt: s.pHat,
-      resid: (s.y - s.pHat) * 1e4,
-      vel: s.vHat * 1e4,
-      Rt: s.Rt,
-      sa2: s.sa2,
-      nu: s.nu,
-      gamma: s.gamma,
-      cusum: s.cusum,
-      pos: s.action === "TRADE" && s.vHat > 0 ? 1 : 0,
-      hold: s.action === "HOLD" ? 1 : 0,
-    };
-  });
-
-  const jumpB = useMemo(() => (series ? clusters(series, (s) => s.jump) : []), [series]);
-  const holdB = useMemo(() => (series ? clusters(series, (s) => s.ready && s.action === "HOLD") : []), [series]);
-  const regimeB = useMemo(() => (series ? clusters(series, (s) => s.regime) : []), [series]);
-
+  const obs = ready.map((s) => s.y);
+  const filt = ready.map((s) => s.pHat);
+  const resid = ready.map((s) => (s.y - s.pHat) * 1e4);
   const innov = ready.map((s) => s.y - s.pHat);
-  const nis = ready.map((s) => s.nisShadow);
-  const cusum = ready.map((s) => s.cusum);
   const vel = ready.map((s) => s.vHat);
   const rt = ready.map((s) => s.Rt);
   const sa = ready.map((s) => s.sa2);
+  const nu = ready.map((s) => s.nu);
+  const cu = ready.map((s) => s.cusum);
+  const gamma = last?.gamma ?? 1.47;
+
+  const bands = useMemo(() => {
+    const out: { i0: number; i1: number; color: string; opacity: number }[] = [];
+    const push = (pred: (s: LabPoint) => boolean, color: string, opacity: number) => {
+      let a = -1;
+      for (let i = 0; i <= ready.length; i++) {
+        const on = i < ready.length && pred(ready[i]);
+        if (on && a < 0) a = i;
+        if (!on && a >= 0) {
+          out.push({ i0: a, i1: i - 1, color, opacity });
+          a = -1;
+        }
+      }
+    };
+    push((s) => s.regime, "#5a4500", 0.45);
+    push((s) => s.jump, "#ff9900", 0.22);
+    push((s) => s.action === "HOLD", "#ff3d00", 0.16);
+    return out;
+  }, [ready]);
 
   let eq = 0;
   const equity: number[] = [];
@@ -133,14 +99,14 @@ function Monitor() {
     equity.push(eq);
   }
 
-  const heatCols = 80;
   const heat = useMemo(() => {
+    const cols = 72;
     if (!ready.length) return { cols: [] as number[][], vmax: 1 };
-    const cols: number[][] = [];
-    const stride = Math.max(1, Math.floor(ready.length / heatCols));
+    const out: number[][] = [];
+    const stride = Math.max(1, Math.floor(ready.length / cols));
     let vmax = 1e-18;
-    for (let c = 0; c < heatCols; c++) {
-      const sl = ready.slice(c * stride, Math.min(ready.length, (c + 1) * stride + 6));
+    for (let c = 0; c < cols; c++) {
+      const sl = ready.slice(c * stride, Math.min(ready.length, (c + 1) * stride + 4));
       const row = [0, 0, 0, 0];
       for (let j = 0; j < 4; j++) {
         let s = 0;
@@ -148,32 +114,24 @@ function Monitor() {
         row[j] = sl.length ? s / sl.length : 0;
         if (row[j] > vmax) vmax = row[j];
       }
-      cols.push(row);
+      out.push(row);
     }
-    return { cols, vmax };
+    return { cols: out, vmax };
   }, [ready]);
 
   const lastE = [0, 0, 0, 0];
-  if (last?.details) {
-    for (let j = 0; j < 4; j++) lastE[j] = Math.abs(last.details[j] ?? 0);
-  }
-  const eMax = Math.max(...lastE, 1e-12);
+  if (last?.details) for (let j = 0; j < 4; j++) lastE[j] = Math.abs(last.details[j] ?? 0);
 
   const leds = ready.slice(-36).map((s) => s.nu > s.gamma);
   const persistHits = leds.slice(-5).filter(Boolean).length;
-
   const chg = last && prev ? last.y - prev.y : 0;
   const px = last ? Math.exp(last.y) : 0;
   const mid = last ? last.pHat : 0;
   const spr = last ? Math.sqrt(Math.max(last.Rt, 1e-16)) : 0;
-  const lat = ms != null ? (ms / Math.max(n, 1)).toFixed(2) : "—";
-  const tip = {
-    contentStyle: { background: "#000", border: "1px solid #333", fontSize: 10, fontFamily: "IBM Plex Mono" },
-  };
+  const lat = pack.ms ? (pack.ms / Math.max(n, 1)).toFixed(2) : "—";
 
   return (
     <Shell>
-      {/* ticker */}
       <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 border border-[#2a2a2a] bg-[#0a0a0a] px-2 py-1 font-mono text-[11px]">
         <span className="text-accent">BTCUSD</span>
         <span className="text-xl tabular-nums text-white">{px ? px.toFixed(2) : "—"}</span>
@@ -187,11 +145,12 @@ function Monitor() {
           {last?.action === "HOLD" ? "GATE HOLD" : "GATE TRADE"}
         </span>
         <span className="text-trade">AUDT PASS</span>
-        <span className="text-[#8a8a8a]">{track} {n}b</span>
-        <span className="ml-auto text-[#8a8a8a]">
-          {clock} · {lat} ms/bar
+        <span className="text-[#8a8a8a]">
+          {track} {ready.length}/{n}b
         </span>
+        <span className="ml-auto text-[#8a8a8a]">{lat} ms/bar</span>
       </div>
+      {pack.err ? <p className="mb-1 text-[11px] text-hold">{pack.err}</p> : null}
 
       <div className="mb-1 flex flex-wrap gap-1 font-mono text-[10px]">
         {(["A1", "A2", "A3"] as TrackKind[]).map((k) => (
@@ -199,78 +158,46 @@ function Monitor() {
             key={k}
             type="button"
             className={`h-6 px-2 ${track === k ? "bg-accent text-black" : "border border-[#2a2a2a] text-[#c4c4c4]"}`}
-            onClick={() => {
-              setSeries(null);
-              setTrack(k);
-            }}
+            onClick={() => setTrack(k)}
           >
             {k}
           </button>
         ))}
         <button
+          type="button"
           className="h-6 border border-[#2a2a2a] px-2 text-[#c4c4c4]"
-          onClick={() => {
-            setSeries(null);
-            setGated((g) => !g);
-          }}
+          onClick={() => setGated((g) => !g)}
         >
           GATE {gated ? "1" : "0"}
         </button>
         <button
+          type="button"
           className="h-6 border border-[#2a2a2a] px-2 text-[#c4c4c4]"
-          onClick={() => {
-            setSeries(null);
-            setN((x) => (x === 760 ? 1000 : x === 1000 ? 560 : 760));
-          }}
+          onClick={() => setN((x) => (x === 520 ? 720 : x === 720 ? 400 : 520))}
         >
           LEN {n}
         </button>
-        <button
-          className="h-6 bg-accent px-2 text-black"
-          onClick={() => {
-            setSeries(null);
-            setSeed((s) => s + 1);
-          }}
-        >
+        <button type="button" className="h-6 bg-accent px-2 text-black" onClick={() => setSeed((s) => s + 1)}>
           RESAMPLE
         </button>
       </div>
 
       <div className="grid gap-1 lg:grid-cols-12">
-        {/* PRICE TAPE */}
-        <Box code="HP <GO>" title="log π  ·  grey tape  ·  cyan CAMASE  ·  red HOLD  ·  gold jump" className="lg:col-span-8">
-          <div className="h-[250px]">
-            {tape.length ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={tape} margin={{ top: 4, right: 6, left: 0, bottom: 0 }}>
-                  {regimeB.map((b, i) => (
-                    <ReferenceArea key={"r" + i} x1={b.x1} x2={b.x2} fill="#3d3000" fillOpacity={0.55} />
-                  ))}
-                  {jumpB.map((b, i) => (
-                    <ReferenceArea key={"j" + i} x1={b.x1} x2={b.x2} fill="#ff9900" fillOpacity={0.18} />
-                  ))}
-                  {holdB.map((b, i) => (
-                    <ReferenceArea key={"h" + i} x1={b.x1} x2={b.x2} fill="#ff3d00" fillOpacity={0.12} />
-                  ))}
-                  <XAxis dataKey="t" tick={{ fill: "#666", fontSize: 9 }} />
-                  <YAxis yAxisId="p" domain={["auto", "auto"]} tick={{ fill: "#888", fontSize: 9 }} width={46} />
-                  <YAxis yAxisId="r" orientation="right" tick={{ fill: "#555", fontSize: 9 }} width={28} />
-                  <Tooltip {...tip} />
-                  <Line yAxisId="p" dataKey="obs" stroke="#8a8a8a" dot={false} strokeWidth={1} name="tape" />
-                  <Line yAxisId="p" dataKey="filt" stroke="#00e5ff" dot={false} strokeWidth={1.7} name="filt" />
-                  <Area yAxisId="r" dataKey="resid" stroke="none" fill="#ff9900" fillOpacity={0.15} name="resid bp" />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="p-4 text-[11px] text-[#8a8a8a]">loading cascade…</p>
-            )}
-          </div>
+        <Box code="HP GO" title="log price  grey tape  cyan CAMASE  gold jump  red HOLD" className="lg:col-span-8">
+          <Tape
+            height={230}
+            series={[
+              { ys: obs, color: "#9a9a9a", width: 1 },
+              { ys: filt, color: "#00e5ff", width: 1.8 },
+            ]}
+            bands={bands}
+            residual={resid}
+          />
         </Box>
 
-        {/* QUOTE / STATE */}
-        <Box code="QTE" title="synthetic book from √R" className="lg:col-span-4">
+        <Box code="QTE" title="synthetic book from sqrt(R)" className="lg:col-span-4">
           <div className="mb-2 text-center">
-            <p className="text-[10px] text-[#8a8a8a]">MID p̂</p>
+            <p className="text-[10px] text-[#8a8a8a]">MID p-hat</p>
             <p className="text-2xl tabular-nums text-accent">{last ? last.pHat.toFixed(6) : "—"}</p>
           </div>
           <Ladder
@@ -283,48 +210,35 @@ function Monitor() {
             ]}
           />
           <div className="mt-2">
-            <Kv k="SPREAD √R" v={spr.toExponential(2)} tone="amber" />
-            <Kv k="VEL ×1e4" v={last ? (last.vHat * 1e4).toFixed(3) : "—"} tone={(last?.vHat ?? 0) > 0 ? "up" : "dn"} />
-            <Kv k="ρ  Eᴴ/(Eᴴ+Eᴸ)" v={last ? last.rho.toFixed(3) : "—"} />
+            <Kv k="SPREAD sqrt(R)" v={spr.toExponential(2)} tone="amber" />
+            <Kv k="VEL x1e4" v={last ? (last.vHat * 1e4).toFixed(3) : "—"} tone={(last?.vHat ?? 0) > 0 ? "up" : "dn"} />
+            <Kv k="rho E_hi/(E_hi+E_lo)" v={last ? last.rho.toFixed(3) : "—"} />
             <Kv k="CUSUM / H" v={last ? `${last.cusum.toFixed(1)} / ${DEFAULT_CONFIG.cusumH}` : "—"} />
           </div>
         </Box>
 
-        {/* R thermostat */}
-        <Box code="R <T>" title="measurement noise — high-scale energy drives distrust of tape" className="lg:col-span-4">
-          <div className="h-[88px]">
-            <Spark ys={rt} color="#ff9100" fill="#ff9100" h={88} />
-          </div>
+        <Box code="R T" title="measurement noise — high-scale energy distrusts the tape" className="lg:col-span-4">
+          <Spark ys={rt} color="#ff9100" fill="#ff9100" h={88} />
           <div className="mt-1 flex justify-between text-[10px] text-[#8a8a8a]">
-            <span>floor { (DEFAULT_CONFIG.R0 / DEFAULT_CONFIG.clipR).toExponential(1) }</span>
+            <span>{(DEFAULT_CONFIG.R0 / DEFAULT_CONFIG.clipR).toExponential(1)}</span>
             <span className="text-accent">{last ? last.Rt.toExponential(2) : "—"}</span>
-            <span>ceil { (DEFAULT_CONFIG.R0 * DEFAULT_CONFIG.clipR).toExponential(1) }</span>
+            <span>{(DEFAULT_CONFIG.R0 * DEFAULT_CONFIG.clipR).toExponential(1)}</span>
           </div>
         </Box>
 
-        {/* Q thermostat */}
-        <Box code="Q <T>" title="process noise — low-scale energy lets the state run" className="lg:col-span-4">
-          <div className="h-[88px]">
-            <Spark ys={sa} color="#69f0ae" fill="#69f0ae" h={88} />
-          </div>
+        <Box code="Q T" title="process noise — low-scale energy lets the state run" className="lg:col-span-4">
+          <Spark ys={sa} color="#69f0ae" fill="#69f0ae" h={88} />
           <div className="mt-1 flex justify-between text-[10px] text-[#8a8a8a]">
-            <span>floor {(DEFAULT_CONFIG.sigmaA0 / DEFAULT_CONFIG.clipQ).toExponential(1)}</span>
+            <span>{(DEFAULT_CONFIG.sigmaA0 / DEFAULT_CONFIG.clipQ).toExponential(1)}</span>
             <span className="text-trade">{last ? last.sa2.toExponential(2) : "—"}</span>
-            <span>ceil {(DEFAULT_CONFIG.sigmaA0 * DEFAULT_CONFIG.clipQ).toExponential(1)}</span>
+            <span>{(DEFAULT_CONFIG.sigmaA0 * DEFAULT_CONFIG.clipQ).toExponential(1)}</span>
           </div>
         </Box>
 
-        {/* gauges */}
         <Box code="GGE" title="live thermostats" className="lg:col-span-4">
           <div className="flex justify-around">
-            <Gauge value={last?.rho ?? 0} label="ρ rough" warn={(last?.rho ?? 0) > 0.7} />
-            <Gauge
-              value={last?.nu ?? 1}
-              min={0}
-              max={3}
-              label="ν window"
-              warn={(last?.nu ?? 0) > (last?.gamma ?? 1.5)}
-            />
+            <Gauge value={last?.rho ?? 0} label="rho rough" warn={(last?.rho ?? 0) > 0.7} />
+            <Gauge value={last?.nu ?? 1} min={0} max={3} label="nu window" warn={(last?.nu ?? 0) > gamma} />
             <Gauge
               value={last?.cusum ?? 0}
               min={0}
@@ -335,15 +249,14 @@ function Monitor() {
           </div>
         </Box>
 
-        {/* spectrogram */}
-        <Box code="WVLT" title="D1–D2 = tape noise → R    D3–D4 = drift → Q" className="lg:col-span-5">
+        <Box code="WVLT" title="D1-D2 tape noise drives R · D3-D4 drift drives Q" className="lg:col-span-5">
           <div className="space-y-1">
             {["D1 hi", "D2", "D3", "D4 lo"].map((lab, j) => (
               <div key={lab} className="flex items-center gap-2">
                 <span className="w-10 text-[10px] text-[#8a8a8a]">{lab}</span>
                 <div
                   className="grid h-4 flex-1 gap-px"
-                  style={{ gridTemplateColumns: `repeat(${heat.cols.length || 80}, minmax(0,1fr))` }}
+                  style={{ gridTemplateColumns: `repeat(${heat.cols.length || 72}, minmax(0,1fr))` }}
                 >
                   {heat.cols.map((col, i) => (
                     <div key={i} style={{ background: heatColor(col[j] / heat.vmax) }} />
@@ -355,27 +268,10 @@ function Monitor() {
           </div>
         </Box>
 
-        {/* NIS + CUSUM */}
-        <Box code="NIS" title="shadow consistency  ·  χ² band  ·  CUSUM tank" className="lg:col-span-4">
-          <div className="h-[92px]">
-            {tape.length ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={tape} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                  <ReferenceLine y={last?.gamma ?? 1.47} stroke="#ff3d00" strokeDasharray="3 3" />
-                  <YAxis hide domain={[0, "auto"]} />
-                  <XAxis dataKey="t" hide />
-                  <Line dataKey="nu" stroke="#ea80fc" dot={false} strokeWidth={1.3} />
-                  <Area dataKey="cusum" stroke="#ffea00" fill="#ffea00" fillOpacity={0.12} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : null}
-          </div>
-          <p className="mt-1 text-[10px] text-[#8a8a8a]">
-            yellow = CUSUM g · purple = window NIS · red dash = γ
-          </p>
+        <Box code="NIS" title="purple window NIS · yellow CUSUM · red chi-squared" className="lg:col-span-4">
+          <DualSpark a={nu} b={cu} ca="#ea80fc" cb="#ffea00" height={92} href={gamma} />
         </Box>
 
-        {/* persistence LEDs */}
         <Box code="3/5" title="persistence strip — red when nu exceeds gamma" className="lg:col-span-3">
           <Leds flags={leds} />
           <p className="mt-2 text-[11px]">
@@ -384,8 +280,7 @@ function Monitor() {
           <p className="text-[10px] text-[#8a8a8a]">alarm fires at 3-of-5 or CUSUM above H</p>
         </Box>
 
-        {/* residual hist */}
-        <Box code="INN" title="innovation y−p̂  ·  should be centred if R is honest" className="lg:col-span-4">
+        <Box code="INN" title="innovation y minus p-hat — should be centred if R is honest" className="lg:col-span-4">
           <Hist values={innov} color="#ff9900" />
           <p className="mt-1 text-[10px] text-[#8a8a8a]">
             mean {(innov.reduce((a, b) => a + b, 0) / Math.max(innov.length, 1)).toExponential(2)}
@@ -393,22 +288,17 @@ function Monitor() {
         </Box>
 
         <Box code="VEL" title="velocity state — long when positive and gate TRADE" className="lg:col-span-4">
-          <div className="h-[80px]">
-            <Spark ys={vel} color="#00e676" fill="#00e676" h={80} baseline={0} />
-          </div>
+          <Spark ys={vel} color="#00e676" fill="#00e676" h={80} baseline={0} />
         </Box>
 
-        <Box code="PNL" title="next-bar long/flat  ·  20 bp round-trip" className="lg:col-span-4">
-          <div className="h-[80px]">
-            <Spark ys={equity} color={eq >= 0 ? "#00e676" : "#ff3d00"} fill={eq >= 0 ? "#00e676" : "#ff3d00"} h={80} />
-          </div>
+        <Box code="PNL" title="next-bar long/flat · 20 bp round-trip" className="lg:col-span-4">
+          <Spark ys={equity} color={eq >= 0 ? "#00e676" : "#ff3d00"} fill={eq >= 0 ? "#00e676" : "#ff3d00"} h={80} />
           <p className="mt-1 text-[10px] text-[#8a8a8a]">
             cum log {eq.toExponential(3)} · TiM {(tim * 100).toFixed(0)}%
           </p>
         </Box>
       </div>
 
-      {/* function tape */}
       <div className="mt-1 grid grid-cols-2 gap-1 font-mono text-[11px] lg:grid-cols-4">
         <div className="bb-box flex justify-between px-2 py-1">
           <span className="text-[#8a8a8a]">F1 GATE</span>
@@ -422,7 +312,9 @@ function Monitor() {
         </div>
         <div className="bb-box flex justify-between px-2 py-1">
           <span className="text-[#8a8a8a]">F3 SNR</span>
-          <span className="text-[#00e5ff]">{Number.isFinite(snr) ? `${snr >= 0 ? "+" : ""}${snr.toFixed(1)} dB` : "—"}</span>
+          <span className="text-[#00e5ff]">
+            {Number.isFinite(snr) ? `${snr >= 0 ? "+" : ""}${snr.toFixed(1)} dB` : "—"}
+          </span>
         </div>
         <div className="bb-box flex justify-between px-2 py-1">
           <span className="text-[#8a8a8a]">F4 DELAY</span>
