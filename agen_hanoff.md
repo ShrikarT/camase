@@ -75,6 +75,8 @@ improvements that were blocking honest Review-2 numbers.
 - Extra tests: clip, χ² threshold, sanitizer, Sharpe units.
 - `scripts/reproduce_results.py` refreshes `results/` and the published copies.
 - Regenerated Track B tables on the real CSV (`synthetic: false`).
+- Pushed `5fee287` Milestone 8 (Binance fetch + CSV).
+- Pushed `fd7f0fc` Milestone 9 (Sharpe units, TS M8/M9, reproduce).
 
 ### Still open
 1. Longer BTC history (`--pages 20+`) if Review-2 wants weeks, not hours.
