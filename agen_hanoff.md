@@ -52,6 +52,8 @@ Binance fetch, Sharpe units, TS M8/M9. `5fee287`, `fd7f0fc`, `95fd564`.
 - `results/README.md` + Results page reading note.
 - CLI: `--calibrate`, `--far`, `--profile`.
 - pytest: 26 passed.
+- Pushed `c1b494e` Milestone 10 (wavelet tests + calibration).
+- Pushed `3e5e8d6` Milestone 11 (FAR + 6000-bar BTC + reading notes).
 
 ### Still open
 1. Months of BTC if the viva wants it (`--pages 20+`).
