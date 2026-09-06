@@ -23,8 +23,8 @@ function AblationPage() {
           </p>
           <h2 className="font-display text-3xl tracking-tight">Ablation ladder</h2>
           <p className="mt-2 max-w-2xl text-sm text-fg-muted">
-            M6 must beat M2, not merely M1. Leaky twins (M5′) price look-ahead. Metrics are
-            Track A only — RMSE and SNR require latent truth.
+            M6 must beat M2, not merely M1. M8 (IMM) and M9 (UKF) are covariance
+            baselines, not wavelet models. Leaky twins (M5′) price look-ahead.
           </p>
         </div>
         <div className="flex gap-2">

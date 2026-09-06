@@ -2,6 +2,8 @@ import { CamaseConfig, DEFAULT_CONFIG, warmup } from "./config";
 import { KalmanIRW, processCov, transition } from "./kalman";
 import { CamaseEngine } from "./pipeline";
 import { batchCausalDetails, circularModwtDetails } from "./wavelet";
+import { IMMFilter } from "./imm";
+import { UnscentedIRW } from "./ukf";
 
 export type ModelName =
   | "M0"
@@ -14,7 +16,9 @@ export type ModelName =
   | "M6"
   | "M7"
   | "M5'"
-  | "M6'";
+  | "M6'"
+  | "M8"
+  | "M9";
 
 export type ModelRun = {
   name: string;
@@ -228,6 +232,55 @@ export function runM5(
   return run;
 }
 
+export function runM8(prices: number[], cfg: CamaseConfig = DEFAULT_CONFIG): ModelRun {
+  const y = prices.map((p) => Math.log(Math.max(p, 1e-12)));
+  const n = y.length;
+  const imm = new IMMFilter(cfg.R0, cfg.sigmaA0, cfg.dt);
+  const pHat = new Array(n).fill(NaN);
+  const vHat = new Array(n).fill(0);
+  const ready = new Array(n).fill(false);
+  const action: ("TRADE" | "HOLD")[] = Array(n).fill("TRADE");
+  const pred = new Array(n).fill(NaN);
+  const nis: number[] = [];
+  for (let t = 0; t < n; t++) {
+    pred[t] = imm.lastPred;
+    const x = imm.step(y[t]);
+    pHat[t] = x[0];
+    vHat[t] = x[1];
+    ready[t] = t >= 5;
+    nis.push(imm.lastNis);
+  }
+  const run = { name: "M8", pHat, vHat, ready, action, pred };
+  (run as ModelRun & { nis: number[] }).nis = nis;
+  return run;
+}
+
+export function runM9(prices: number[], cfg: CamaseConfig = DEFAULT_CONFIG): ModelRun {
+  const y = prices.map((p) => Math.log(Math.max(p, 1e-12)));
+  const n = y.length;
+  const ukf = new UnscentedIRW();
+  const F = transition(cfg.dt);
+  const Q = processCov(cfg.sigmaA0, cfg.dt);
+  const pHat = new Array(n).fill(NaN);
+  const vHat = new Array(n).fill(0);
+  const ready = new Array(n).fill(false);
+  const action: ("TRADE" | "HOLD")[] = Array(n).fill("TRADE");
+  const pred = new Array(n).fill(NaN);
+  const nis: number[] = [];
+  for (let t = 0; t < n; t++) {
+    pred[t] = ukf.oneStepPred(F);
+    ukf.predict(F, Q);
+    ukf.update(y[t], cfg.R0);
+    pHat[t] = ukf.x[0];
+    vHat[t] = ukf.x[1];
+    ready[t] = t >= 2;
+    nis.push(ukf.lastNis);
+  }
+  const run = { name: "M9", pHat, vHat, ready, action, pred };
+  (run as ModelRun & { nis: number[] }).nis = nis;
+  return run;
+}
+
 export function runNamed(name: ModelName, prices: number[], cfg: CamaseConfig = DEFAULT_CONFIG): ModelRun {
   switch (name) {
     case "M0":
@@ -252,6 +305,10 @@ export function runNamed(name: ModelName, prices: number[], cfg: CamaseConfig = 
       return runM5(prices, cfg, true);
     case "M7":
       return runEngine(prices, cfg, "M7");
+    case "M8":
+      return runM8(prices, cfg);
+    case "M9":
+      return runM9(prices, cfg);
     default:
       return runStatic(prices, cfg, name);
   }

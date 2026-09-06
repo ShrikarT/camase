@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .audits import run_all_audits
 from .evaluation import run_ablation, run_track_a
+from .jsonutil import dump, sanitize
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -22,8 +23,23 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--track-b", action="store_true")
     p.add_argument("--pareto", action="store_true")
     p.add_argument("--csv", default="")
+    p.add_argument("--fetch-btc", action="store_true")
+    p.add_argument("--pages", type=int, default=3)
     p.add_argument("--out", default="")
     args = p.parse_args(argv)
+
+    if args.fetch_btc:
+        from .fetch_btc import fetch_klines, write_klines_csv
+
+        dest = Path(args.csv or "data/btc_usdt_1m.csv")
+        try:
+            rows = fetch_klines(pages=args.pages)
+        except RuntimeError as exc:
+            print(f"fetch failed: {exc}", file=sys.stderr)
+            return 2
+        write_klines_csv(rows, dest)
+        print(json.dumps({"wrote": str(dest), "n": len(rows), "sha256": dest.with_suffix(dest.suffix + '.sha256').read_text().split()[0]}))
+        return 0
 
     if args.audits:
         for r in run_all_audits():
@@ -40,10 +56,10 @@ def main(argv: list[str] | None = None) -> int:
         path = generate_heston(n=args.n, track=args.track)  # type: ignore[arg-type]
         models = [m.strip() for m in args.models.split(",") if m.strip()]
         out = run_walkforward(path.price, path.log_obs, models=models)
-        text = json.dumps(out, indent=2)
+        text = json.dumps(sanitize(out), indent=2)
         print(text)
         if args.out:
-            Path(args.out).write_text(text)
+            dump(out, args.out)
         return 0
 
     if args.track_b:
@@ -59,14 +75,16 @@ def main(argv: list[str] | None = None) -> int:
             "n": int(bars.close.size),
             "walkforward": run_walkforward(bars.close, bars.log_price, models=models),
         }
-        print(json.dumps(out, indent=2))
+        print(json.dumps(sanitize(out), indent=2))
+        if args.out:
+            dump(out, args.out)
         return 0
 
     if args.pareto:
         from .pareto import run_pareto
 
         pts = run_pareto(n=args.n, track=args.track)
-        print(json.dumps(pts, indent=2))
+        print(json.dumps(sanitize(pts), indent=2))
         return 0
 
     if args.ablation:
@@ -81,7 +99,9 @@ def main(argv: list[str] | None = None) -> int:
 
     models = [m.strip() for m in args.models.split(",") if m.strip()]
     out = run_track_a(track=args.track, n=args.n, models=models)
-    print(json.dumps(out, indent=2))
+    print(json.dumps(sanitize(out), indent=2))
+    if args.out:
+        dump(out, args.out)
     return 0
 
 

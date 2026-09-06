@@ -8,6 +8,9 @@ import numpy as np
 
 from .models import ModelRun
 
+# 1-minute bars, 24/7 crypto. Used only for the annualised column.
+BARS_PER_YEAR = 365 * 24 * 60
+
 
 @dataclass
 class StrategyResult:
@@ -15,10 +18,21 @@ class StrategyResult:
     equity_net: np.ndarray
     sharpe_gross: float
     sharpe_net: float
+    sharpe_net_ann: float
     max_dd_net: float
     turnover: float
     time_in_market: float
     n_trades: int
+
+
+def _sharpe(x: np.ndarray, mask: np.ndarray, annualise: bool) -> float:
+    m = x[mask] if mask.any() else x
+    if m.size < 3 or float(m.std()) == 0.0:
+        return 0.0
+    s = float(m.mean() / m.std())
+    if annualise:
+        s *= float(np.sqrt(BARS_PER_YEAR))
+    return s
 
 
 def overlay_long_flat(run: ModelRun, log_price: np.ndarray, cost_rt_bp: float = 20.0) -> StrategyResult:
@@ -40,11 +54,6 @@ def overlay_long_flat(run: ModelRun, log_price: np.ndarray, cost_rt_bp: float = 
     dpos = np.abs(np.diff(pos_exec, prepend=0.0))
     cost = dpos * (cost_rt_bp * 1e-4 / 2.0)
     net = gross - cost
-    def sharpe(x: np.ndarray) -> float:
-        m = x[run.ready] if run.ready.any() else x
-        if m.std() == 0:
-            return 0.0
-        return float(m.mean() / m.std() * np.sqrt(365 * 24 * 60))
     eq_g = np.cumsum(gross)
     eq_n = np.cumsum(net)
     peak = np.maximum.accumulate(eq_n)
@@ -53,9 +62,10 @@ def overlay_long_flat(run: ModelRun, log_price: np.ndarray, cost_rt_bp: float = 
     return StrategyResult(
         equity_gross=eq_g,
         equity_net=eq_n,
-        sharpe_gross=sharpe(gross),
-        sharpe_net=sharpe(net),
-        max_dd_net=float(dd.min()),
+        sharpe_gross=_sharpe(gross, run.ready, annualise=False),
+        sharpe_net=_sharpe(net, run.ready, annualise=False),
+        sharpe_net_ann=_sharpe(net, run.ready, annualise=True),
+        max_dd_net=float(dd.min()) if dd.size else 0.0,
         turnover=float(dpos.sum()),
         time_in_market=tim,
         n_trades=int(np.sum(dpos > 0)),

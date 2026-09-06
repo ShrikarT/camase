@@ -150,6 +150,7 @@ def run_walkforward(
                 "embargo": fold.embargo_end - fold.test_end,
                 "mspe": mspe(run, yp_test),
                 "sharpe_net": st.sharpe_net,
+                "sharpe_net_ann": st.sharpe_net_ann,
                 "sharpe_gross": st.sharpe_gross,
                 "max_dd_net": st.max_dd_net,
                 "time_in_market": st.time_in_market,
