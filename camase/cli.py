@@ -25,8 +25,31 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--csv", default="")
     p.add_argument("--fetch-btc", action="store_true")
     p.add_argument("--pages", type=int, default=3)
+    p.add_argument("--calibrate", action="store_true")
+    p.add_argument("--far", action="store_true")
+    p.add_argument("--profile", default="paper")
     p.add_argument("--out", default="")
     args = p.parse_args(argv)
+
+    if args.calibrate:
+        from .calibration import run_calibration
+        from .jsonutil import dump, sanitize
+
+        out = run_calibration()
+        print(json.dumps(sanitize(out), indent=2))
+        dest = Path(args.out or "results/calibration.json")
+        dump(out, dest)
+        return 0
+
+    if args.far:
+        from .calibration import far_on_null
+        from .jsonutil import dump, sanitize
+
+        out = far_on_null()
+        print(json.dumps(sanitize(out), indent=2))
+        if args.out:
+            dump(out, args.out)
+        return 0
 
     if args.fetch_btc:
         from .fetch_btc import fetch_klines, write_klines_csv
