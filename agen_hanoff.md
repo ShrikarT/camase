@@ -69,6 +69,7 @@ Handoff docs, then remaining Review-2 pieces, push as ShrikarT.
 - Confirmed connector identity: `ShrikarT` / 132975062.
 - Rewrote `claude.md` and this file (done vs left).
 - Docs push: `b44f8c64` Milestone 3.
+- Code push: `c6bcaaa` Milestone 4–7 (M8/M9, Track B, WF, results).
 - M8 IMM (calm/normal/stress, π_ii=0.92) in `camase/imm.py`.
 - M9 UKF (5 sigma points, α=1e-3, β=2, κ=0) in `camase/ukf.py`.
 - Track B loader + hashed synthetic sample `data/btc_sample.csv`
