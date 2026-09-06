@@ -1,27 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0b0c0e;
-  --color-bg-elevated: #13151a;
-  --color-bg-subtle: #1a1d24;
-  --color-fg: #ecece8;
-  --color-fg-muted: #9a9d96;
-  --color-fg-subtle: #6d716a;
-  --color-line: #2a2d33;
-  --color-line-strong: #3a3e46;
-  --color-accent: #c5c1b4;
+  --color-bg: #07090d;
+  --color-bg-elevated: #0d1118;
+  --color-bg-subtle: #151b24;
+  --color-fg: #e8edf2;
+  --color-fg-muted: #8b97a6;
+  --color-fg-subtle: #5c6775;
+  --color-line: #1e2733;
+  --color-line-strong: #2c3644;
+  --color-accent: #d4a017;
   --color-accent-fg: #0b0c0e;
-  --color-trade: #8fa58a;
-  --color-hold: #c17a62;
+  --color-trade: #3dcf8e;
+  --color-hold: #ff7a45;
   --color-latent: #7f93a8;
-  --color-obs: #c5c1b4;
-  --color-filter: #d8c48a;
-  --font-display: "Newsreader", "Times New Roman", serif;
+  --color-obs: #9aa6b4;
+  --color-filter: #5ee0d0;
+  --color-rline: #ff8a4c;
+  --color-qline: #3dcf8e;
+  --color-nis: #c9a0ff;
+  --color-warn: #d4a017;
+  --font-display: "IBM Plex Sans", "Segoe UI", sans-serif;
   --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 18px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
 }
 
 @layer base {
@@ -41,6 +45,17 @@
   * {
     border-color: var(--color-line);
   }
+}
+
+.term-panel {
+  border: 1px solid var(--color-line);
+  background: linear-gradient(180deg, #10161f 0%, #0c1118 100%);
+  border-radius: 8px;
+}
+
+.heat-cell {
+  height: 100%;
+  min-height: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

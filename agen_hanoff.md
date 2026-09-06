@@ -62,9 +62,26 @@ Binance fetch, Sharpe units, TS M8/M9. `5fee287`, `fd7f0fc`, `95fd564`.
 
 ---
 
+## Session 5 — 2026-09-06
+
+### Intent
+Make the lab look like a professional Bloomberg-style live monitor
+(reference screenshot: log-price + gold event bands, R/Q clips,
+D1–D4 energy heatmap, shadow NIS vs χ², gate / FAR / SNR / delay).
+
+### Done
+- Terminal chrome: dense header, gold accent, cyan filter / orange R /
+  green Q / purple NIS.
+- Live Monitor page rebuilt to match the reference layout.
+- Group delay and FAR/day computed on the current run.
+- Gold bands mark jump / regime windows from the Heston generator.
+
+---
+
 ## Next agent should
 
 1. `python3 -m pytest tests/ -q`
 2. Push only as **ShrikarT**.
 3. Refresh data: `--fetch-btc --pages 6` then `scripts/reproduce_results.py`.
 4. Append commit SHAs here after every push.
+
