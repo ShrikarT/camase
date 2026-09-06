@@ -25,7 +25,7 @@ function PaperPage() {
             <li>Causal à trous cascade + Audits A/B (db4, J=4, N=512, k=64).</li>
             <li>Two-sided adaptation: E^H → R_t, E^L → σ²_a. Joseph IRW filter.</li>
             <li>Shadow NIS gate, 3-of-5 + CUSUM, ~1 false alarm / session.</li>
-            <li>Ablation M0–M7 and leaky twins M5′–M7′.</li>
+            <li>Ablation M0–M9 and leaky twins M5′–M7′.</li>
             <li>Track A Heston truth; Track B prediction / economics only.</li>
             <li>Purged walk-forward, 20 bp costs, Deflated Sharpe, reproducible code.</li>
           </ol>

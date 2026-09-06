@@ -1,0 +1,90 @@
+[
+  {
+    "model": "M0",
+    "rmse_p": 0.0007331369649757604,
+    "rmse_v": 247.3978802759436,
+    "snr_db": -4.33571121796848,
+    "mean_nis": null,
+    "mspe": 6.870147613366949e-07,
+    "time_in_market": 0.4130019120458891,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  },
+  {
+    "model": "M1",
+    "rmse_p": 0.0004172998349965426,
+    "rmse_v": 245.61973726493432,
+    "snr_db": 0.4935913308708448,
+    "mean_nis": 2.4250996752032243,
+    "mspe": 1.7484578049079644e-06,
+    "time_in_market": 1.0,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  },
+  {
+    "model": "M2",
+    "rmse_p": 0.00039432663477442846,
+    "rmse_v": 249.07694460100925,
+    "snr_db": 1.124205622157099,
+    "mean_nis": 0.4878390298925928,
+    "mspe": 6.864918985452607e-07,
+    "time_in_market": 1.0,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  },
+  {
+    "model": "M5",
+    "rmse_p": 0.0005802962179191905,
+    "rmse_v": 254.93736240317264,
+    "snr_db": -1.9713067410792422,
+    "mean_nis": 1.927861890605583,
+    "mspe": 1.3122217805884773e-06,
+    "time_in_market": 1.0,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  },
+  {
+    "model": "M6",
+    "rmse_p": 0.0005524639229663579,
+    "rmse_v": 254.93739173315478,
+    "snr_db": -1.5443903990467822,
+    "mean_nis": 2.587862934268,
+    "mspe": 1.156091851951792e-06,
+    "time_in_market": 1.0,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  },
+  {
+    "model": "M7",
+    "rmse_p": 0.0005524639229663579,
+    "rmse_v": 254.93739173315478,
+    "snr_db": -1.5443903990467822,
+    "mean_nis": 2.587862934268,
+    "mspe": 1.156091851951792e-06,
+    "time_in_market": 0.3556953179594689,
+    "far_per_day": 927.7987421383648,
+    "mean_detect_delay": 0.0
+  },
+  {
+    "model": "M8",
+    "rmse_p": 0.00037683965452028353,
+    "rmse_v": 245.83066507634095,
+    "snr_db": 1.3867740893626876,
+    "mean_nis": 0.8630390183916495,
+    "mspe": 1.110688042427906e-06,
+    "time_in_market": 1.0,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  },
+  {
+    "model": "M9",
+    "rmse_p": 0.000417299847029612,
+    "rmse_v": 245.61973726490348,
+    "snr_db": 0.4935910804084604,
+    "mean_nis": 2.425099593990268,
+    "mspe": 1.748457754997202e-06,
+    "time_in_market": 1.0,
+    "far_per_day": null,
+    "mean_detect_delay": null
+  }
+]
