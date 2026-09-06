@@ -1,31 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #07090d;
-  --color-bg-elevated: #0d1118;
-  --color-bg-subtle: #151b24;
-  --color-fg: #e8edf2;
-  --color-fg-muted: #8b97a6;
-  --color-fg-subtle: #5c6775;
-  --color-line: #1e2733;
-  --color-line-strong: #2c3644;
-  --color-accent: #d4a017;
-  --color-accent-fg: #0b0c0e;
-  --color-trade: #3dcf8e;
-  --color-hold: #ff7a45;
-  --color-latent: #7f93a8;
-  --color-obs: #9aa6b4;
-  --color-filter: #5ee0d0;
-  --color-rline: #ff8a4c;
-  --color-qline: #3dcf8e;
-  --color-nis: #c9a0ff;
-  --color-warn: #d4a017;
-  --font-display: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --color-bg: #000000;
+  --color-bg-elevated: #0a0a0a;
+  --color-bg-subtle: #121212;
+  --color-fg: #f2f2f2;
+  --color-fg-muted: #c4c4c4;
+  --color-fg-subtle: #8a8a8a;
+  --color-line: #2a2a2a;
+  --color-line-strong: #3d3d3d;
+  --color-accent: #ff9900;
+  --color-accent-fg: #000000;
+  --color-trade: #00e676;
+  --color-hold: #ff3d00;
+  --color-latent: #7eb6ff;
+  --color-obs: #b0b0b0;
+  --color-filter: #00e5ff;
+  --color-rline: #ff9100;
+  --color-qline: #69f0ae;
+  --color-nis: #ea80fc;
+  --color-warn: #ffea00;
+  --font-display: "IBM Plex Mono", ui-monospace, monospace;
   --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
 }
 
 @layer base {
@@ -36,9 +36,9 @@
 
   html,
   body {
-    background: var(--color-bg);
-    color: var(--color-fg);
-    font-family: var(--font-sans);
+    background: #000;
+    color: #f2f2f2;
+    font-family: var(--font-mono);
     min-height: 100%;
   }
 
@@ -47,15 +47,20 @@
   }
 }
 
-.term-panel {
-  border: 1px solid var(--color-line);
-  background: linear-gradient(180deg, #10161f 0%, #0c1118 100%);
-  border-radius: 8px;
+.bb-box {
+  border: 1px solid #2a2a2a;
+  background: #050505;
 }
 
-.heat-cell {
-  height: 100%;
-  min-height: 10px;
+.bb-hd {
+  background: #0d0d0d;
+  border-bottom: 1px solid #2a2a2a;
+  color: #ff9900;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 8px;
 }
 
 @media (prefers-reduced-motion: reduce) {

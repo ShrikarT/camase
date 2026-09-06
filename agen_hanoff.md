@@ -76,6 +76,10 @@ D1–D4 energy heatmap, shadow NIS vs χ², gate / FAR / SNR / delay).
 - Group delay and FAR/day computed on the current run.
 - Gold bands mark jump / regime windows from the Heston generator.
 - Pushed `f791c40` Milestone 12 (Bloomberg-style live monitor).
+- Session 5b: full Bloomberg board — ticker, synthetic √R book, R/Q
+  thermostats, ρ/ν/CUSUM gauges, D1–D4 spectrogram, NIS+CUSUM tank,
+  3-of-5 LED strip, innovation histogram, velocity oscillator,
+  costed long/flat tape, F1–F4 function row.
 
 ---
 
