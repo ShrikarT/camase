@@ -180,16 +180,28 @@ function Monitor() {
         <button type="button" className="h-6 bg-accent px-2 text-black" onClick={() => setSeed((s) => s + 1)}>
           RESAMPLE
         </button>
+        <button
+          type="button"
+          className="h-6 border border-accent px-2 text-accent"
+          onClick={() => {
+            setTrack("A3");
+            setSeed(7);
+            setN(720);
+          }}
+        >
+          STORY A3
+        </button>
       </div>
 
       <div className="grid gap-1 lg:grid-cols-12">
-        <Box code="HP GO" title="log price  grey tape  cyan CAMASE  gold jump  red HOLD" className="lg:col-span-8">
+        <Box code="HP GO" title="log price (ln)  grey tape  cyan CAMASE  gold jump  red HOLD" className="lg:col-span-8">
           <Tape
             height={230}
             t0={ready[0]?.t ?? 0}
             series={[
               { ys: obs, color: "#9a9a9a", width: 1, name: "tape" },
               { ys: filt, color: "#00e5ff", width: 1.8, name: "filt" },
+              { ys: ready.map((s) => s.latent), color: "#7eb6ff", width: 1, name: "latent" },
             ]}
             bands={bands}
             residual={resid}
@@ -308,7 +320,7 @@ function Monitor() {
           </span>
         </div>
         <div className="bb-box flex justify-between px-2 py-1">
-          <span className="text-[#8a8a8a]">F2 FAR</span>
+          <span className="text-[#8a8a8a]">F2 HOLDS/1440</span>
           <span className="text-accent">{far.toFixed(2)} /d</span>
         </div>
         <div className="bb-box flex justify-between px-2 py-1">

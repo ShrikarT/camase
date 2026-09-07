@@ -105,6 +105,26 @@ Verify the stack, put numbers on every pane, close leftover Review-2 docs.
 
 ---
 
+## Session 7 — 2026-09-07
+
+### Intent
+Implement the suggested improvements without changing the locked architecture.
+Write an updated manuscript (`PAPER.md`).
+
+### Done
+- M6r: same adaptor on log-returns (specification check).
+- Diagnostics: FAR sensitivity, step delay, priced leakage, A3 jump table,
+  8-seed SNR robustness, pilot R0 (not written into defaults).
+- A3 now has scheduled jumps (the Poisson minute rate was ~0).
+- Monitor: latent overlay, STORY A3, HOLDS/1440 label.
+- `PAPER.md` improvements edition. Defaults untouched.
+- pytest 31 passed.
+
+### Still open
+Full publisher-format PDF / viva slides.
+
+---
+
 ## Next agent should
 
 1. `python3 -m pytest tests/ -q`

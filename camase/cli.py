@@ -28,8 +28,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--calibrate", action="store_true")
     p.add_argument("--far", action="store_true")
     p.add_argument("--profile", default="paper")
+    p.add_argument("--diagnostics", action="store_true")
     p.add_argument("--out", default="")
     args = p.parse_args(argv)
+
+    if args.diagnostics:
+        from .diagnostics import run_all_diagnostics
+        from .jsonutil import dump, sanitize
+
+        out = run_all_diagnostics()
+        print(json.dumps(sanitize(out), indent=2))
+        dump(out, Path(args.out or "results/diagnostics.json"))
+        return 0
 
     if args.calibrate:
         from .calibration import run_calibration

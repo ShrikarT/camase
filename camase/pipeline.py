@@ -34,9 +34,10 @@ class EngineOutput:
 
 
 class CamaseEngine:
-    def __init__(self, cfg: Optional[CamaseConfig] = None, gated: bool = True) -> None:
+    def __init__(self, cfg: Optional[CamaseConfig] = None, gated: bool = True, on_returns: bool = False) -> None:
         self.cfg = cfg or CamaseConfig()
         self.gated = gated
+        self.on_returns = on_returns
         self.cascade = CausalAtrous(J=self.cfg.J, n_buffer=self.cfg.n_buffer)
         self.adapt = TwoSidedAdaptor(self.cfg)
         self.ad = KalmanIRW()
@@ -44,6 +45,7 @@ class CamaseEngine:
         self.gate = ShadowGate(self.cfg)
         self.t = -1
         self.ready_t = self.cfg.warmup
+        self._last_y: Optional[float] = None
 
     def reset(self) -> None:
         self.cascade.reset()
@@ -52,12 +54,17 @@ class CamaseEngine:
         self.sh = KalmanIRW()
         self.gate = ShadowGate(self.cfg)
         self.t = -1
+        self._last_y = None
 
     def step(self, price: float, dt: Optional[float] = None) -> EngineOutput:
         dt = self.cfg.dt if dt is None else dt
         y = float(np.log(max(price, 1e-12)))
         self.t += 1
-        details = self.cascade.step(y)
+        wave = y
+        if self.on_returns:
+            wave = 0.0 if self._last_y is None else y - self._last_y
+        self._last_y = y
+        details = self.cascade.step(wave)
         F = transition(dt)
         if self.t < self.ready_t:
             Q0 = process_cov(self.cfg.sigma_a0, dt)
