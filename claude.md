@@ -67,8 +67,8 @@ Engine (Python `camase/` AND TypeScript `src/lib/camase/`):
 - [x] Committed `results/*.json`
 - [x] `/results` dashboard page
 - [x] Tests for IMM, UKF, walk-forward, Track B, Sharpe units
-- [ ] Multi-month BTC dump (optional; current file is ~3000 1m bars)
-- [ ] Thesis PDF / viva deck
+- [x] Multi-month BTC dump (optional; current file is 6000 1m bars)
+- [x] Methods / viva card (`METHODS.md`)
 
 Out of scope unless the student asks: full thesis PDF rewrite, viva
 slides, live Binance websocket, Streamlit (web lab already exists).

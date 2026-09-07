@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Panel, Shell, Stat } from "@/components/camase/shell";
 import { auditA, auditB, auditC, AuditResult, supportTable } from "@/lib/camase/audits";
 
@@ -9,6 +9,11 @@ function AuditsPage() {
   const [results, setResults] = useState<AuditResult[] | null>(null);
   const [running, setRunning] = useState(false);
   const supports = supportTable();
+
+  useEffect(() => {
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function run() {
     setRunning(true);
