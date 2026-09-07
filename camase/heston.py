@@ -52,6 +52,8 @@ def generate_heston(
     scheduled = set()
     if track == "A2" and n > 800:
         scheduled = {n // 5, n // 2, (3 * n) // 4}
+    if track == "A3" and n > 400:
+        scheduled = {n // 6, n // 3, n // 2, (2 * n) // 3, (5 * n) // 6}
 
     for i in range(n):
         if track == "A2" and (n // 3) <= i < (n // 3 + n // 8):

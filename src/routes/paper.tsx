@@ -16,7 +16,10 @@ function PaperPage() {
         High-frequency prices are non-stationary and contaminated by microstructure noise.
         Fixed-parameter smoothers cannot reject that noise and still follow a genuine
         repricing. This project specifies a strictly causal estimator, proves the causality
-        with tests, and reports every metric only where it is well-posed.
+        with tests, and reports every metric only where it is well-posed. The improvements
+        edition is <span className="font-mono text-fg">PAPER.md</span> in the repo: same
+        architecture, honest M6-versus-M2 language, FAR sensitivity, priced leakage, and a
+        dual-track rule.
       </p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">

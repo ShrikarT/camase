@@ -204,10 +204,16 @@ def run_m4b_oakf(prices: np.ndarray, cfg: CamaseConfig) -> ModelRun:
     return ModelRun("M4b", o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
 
 
-def run_engine_model(prices: np.ndarray, cfg: CamaseConfig, name: str, gated: bool) -> ModelRun:
+def run_engine_model(
+    prices: np.ndarray,
+    cfg: CamaseConfig,
+    name: str,
+    gated: bool,
+    on_returns: bool = False,
+) -> ModelRun:
     n = prices.size
     o = _alloc(n)
-    eng = CamaseEngine(cfg, gated=gated)
+    eng = CamaseEngine(cfg, gated=gated, on_returns=on_returns)
     F = transition(cfg.dt)
     prev_x = np.zeros(2)
     for t, px in enumerate(prices):
@@ -350,6 +356,7 @@ RUNNERS: dict[str, Callable[[np.ndarray, CamaseConfig], ModelRun]] = {
     "M4b": run_m4b_oakf,
     "M5": lambda p, c: run_m5_single_scale(p, c, leaky=False),
     "M6": lambda p, c: run_engine_model(p, c, "M6", gated=False),
+    "M6r": lambda p, c: run_engine_model(p, c, "M6r", gated=False, on_returns=True),
     "M7": lambda p, c: run_engine_model(p, c, "M7", gated=True),
     "M5'": lambda p, c: run_m5_single_scale(p, c, leaky=True),
     "M6'": lambda p, c: run_leaky_m6(p, c, gated=False),
