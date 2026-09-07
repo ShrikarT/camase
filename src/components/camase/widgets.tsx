@@ -1,5 +1,15 @@
 import { cn } from "@/lib/utils";
 
+function fmt(v: number): string {
+  if (!Number.isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (a === 0) return "0";
+  if (a >= 100) return v.toFixed(1);
+  if (a >= 1) return v.toFixed(3);
+  if (a >= 0.01) return v.toFixed(4);
+  return v.toExponential(2);
+}
+
 export function Box({
   code,
   title,
@@ -35,7 +45,7 @@ export function Spark({
   h?: number;
   baseline?: number;
 }) {
-  if (ys.length < 2) return <div style={{ height: h }} />;
+  if (ys.length < 2) return <div style={{ height: h }} className="text-[10px] text-[#8a8a8a]">warming</div>;
   const w = 320;
   const finite = ys.filter((v) => Number.isFinite(v));
   const lo = Math.min(...finite);
@@ -49,23 +59,28 @@ export function Spark({
     })
     .join(" ");
   const y0 =
-    baseline === undefined
-      ? null
-      : h - 4 - ((baseline - lo) / span) * (h - 8);
+    baseline === undefined ? null : h - 4 - ((baseline - lo) / span) * (h - 8);
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none">
-      {fill && (
-        <polygon
-          points={`0,${h} ${pts} ${w},${h}`}
-          fill={fill}
-          opacity={0.22}
-        />
-      )}
-      {y0 !== null && (
-        <line x1={0} x2={w} y1={y0} y2={y0} stroke="#333" strokeDasharray="3 3" />
-      )}
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.4} />
-    </svg>
+    <div>
+      <div className="flex gap-1">
+        <div className="flex w-12 shrink-0 flex-col justify-between text-right font-mono text-[10px] tabular-nums text-[#8a8a8a]">
+          <span>{fmt(hi)}</span>
+          <span>{fmt((hi + lo) / 2)}</span>
+          <span>{fmt(lo)}</span>
+        </div>
+        <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none" className="flex-1">
+          <line x1={0} x2={w} y1={4} y2={4} stroke="#1c1c1c" />
+          <line x1={0} x2={w} y1={h / 2} y2={h / 2} stroke="#1c1c1c" />
+          <line x1={0} x2={w} y1={h - 4} y2={h - 4} stroke="#1c1c1c" />
+          {fill && <polygon points={`0,${h} ${pts} ${w},${h}`} fill={fill} opacity={0.22} />}
+          {y0 !== null && <line x1={0} x2={w} y1={y0} y2={y0} stroke="#333" strokeDasharray="3 3" />}
+          <polyline points={pts} fill="none" stroke={color} strokeWidth={1.4} />
+        </svg>
+        <div className="w-12 shrink-0 self-center text-right font-mono text-[10px] tabular-nums" style={{ color }}>
+          {fmt(ys[ys.length - 1])}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -143,14 +158,21 @@ export function Hist({
   }
   const m = Math.max(...counts, 1);
   return (
-    <div className="flex h-20 items-end gap-px">
-      {counts.map((c, i) => (
-        <div
-          key={i}
-          className="flex-1"
-          style={{ height: `${(c / m) * 100}%`, background: color, opacity: 0.35 + 0.65 * (c / m) }}
-        />
-      ))}
+    <div>
+      <div className="flex h-20 items-end gap-px">
+        {counts.map((c, i) => (
+          <div
+            key={i}
+            className="flex-1"
+            style={{ height: `${(c / m) * 100}%`, background: color, opacity: 0.35 + 0.65 * (c / m) }}
+          />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between font-mono text-[10px] text-[#8a8a8a]">
+        <span>{fmt(lo)}</span>
+        <span>n={xs.length}</span>
+        <span>{fmt(hi)}</span>
+      </div>
     </div>
   );
 }

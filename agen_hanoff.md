@@ -84,6 +84,27 @@ D1–D4 energy heatmap, shadow NIS vs χ², gate / FAR / SNR / delay).
 
 ---
 
+## Session 6 — 2026-09-07
+
+### Intent
+Verify the stack, put numbers on every pane, close leftover Review-2 docs.
+
+### Checks
+- pytest 26 passed
+- Audits A/B/C pass from CLI
+- Track B n=6000, results JSON intact
+- Blank charts were Recharts height-0; already replaced by SVG
+- Missing axis numbers: Tape / Spark / DualSpark / Hist now show y ticks, last value, t labels
+
+### Done
+- Axis numbers + last-value tags on the monitor
+- Audits page auto-runs A/B/C on load
+- SPEC page lists honest published findings
+- `METHODS.md` viva card
+- Thesis PDF still not written (out of scope)
+
+---
+
 ## Next agent should
 
 1. `python3 -m pytest tests/ -q`

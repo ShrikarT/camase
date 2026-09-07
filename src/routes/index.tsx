@@ -186,9 +186,10 @@ function Monitor() {
         <Box code="HP GO" title="log price  grey tape  cyan CAMASE  gold jump  red HOLD" className="lg:col-span-8">
           <Tape
             height={230}
+            t0={ready[0]?.t ?? 0}
             series={[
-              { ys: obs, color: "#9a9a9a", width: 1 },
-              { ys: filt, color: "#00e5ff", width: 1.8 },
+              { ys: obs, color: "#9a9a9a", width: 1, name: "tape" },
+              { ys: filt, color: "#00e5ff", width: 1.8, name: "filt" },
             ]}
             bands={bands}
             residual={resid}
@@ -269,7 +270,7 @@ function Monitor() {
         </Box>
 
         <Box code="NIS" title="purple window NIS · yellow CUSUM · red chi-squared" className="lg:col-span-4">
-          <DualSpark a={nu} b={cu} ca="#ea80fc" cb="#ffea00" height={92} href={gamma} />
+          <DualSpark a={nu} b={cu} ca="#ea80fc" cb="#ffea00" height={92} href={gamma} na="nu" nb="g" />
         </Box>
 
         <Box code="3/5" title="persistence strip — red when nu exceeds gamma" className="lg:col-span-3">

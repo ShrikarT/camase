@@ -60,6 +60,21 @@ function PaperPage() {
           <li>Bailey & López de Prado 2014 — Deflated Sharpe.</li>
         </ul>
       </Panel>
+      <Panel title="Published findings on this repo (honest)" className="mt-4">
+        <ul className="space-y-2 text-sm text-fg-muted">
+          <li>Audits A and B pass bit-exact. Audit C shows the circular twin leaks at the wrap.</li>
+          <li>
+            Under paper defaults M6 does not beat M2 on the current Heston generator. M8 (IMM) often
+            does. Calibration log: results/calibration.json.
+          </li>
+          <li>A1 null FAR is 0 HOLD in 2331 ready bars — gate is conservative, not ~1/session yet.</li>
+          <li>
+            Track B uses 6000 public Binance BTCUSDT 1m bars. Walk-forward Sharpe is per bar and
+            negative after 20 bp — economics are a hypothesis.
+          </li>
+          <li>sharpe_net is per bar. sharpe_net_ann is a separate column. Do not mix them with DSR.</li>
+        </ul>
+      </Panel>
     </Shell>
   );
 }
