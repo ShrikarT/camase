@@ -1,214 +1,267 @@
 # CAMASE
 
-**Causality-audited multiscale adaptive state estimation for high-frequency financial time series.**
+**Causal estimation. Audited adaptation. Honest evidence.**
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Research artifact](https://img.shields.io/badge/status-research%20artifact-6f42c1)](#research-status)
-[![Causality](https://img.shields.io/badge/causality-audited-2ea44f)](#causality-audits)
-[![Reproducible](https://img.shields.io/badge/results-reproducible-0a7bbb)](#reproducibility)
+CAMASE is a research system for estimating latent state in noisy high-frequency financial time series. It combines strictly causal multiscale wavelets, adaptive Kalman filtering, independent regime gating, and leakage-audited evaluation in one reproducible artifact.
 
-CAMASE is an executable research artifact for estimating latent state in noisy, high-frequency financial series. It combines a **strictly causal à trous wavelet cascade**, **adaptive covariance mapping**, a **Joseph-form integrated random-walk Kalman filter**, and a **shadow-NIS regime gate**. The repository includes the estimator, a baseline ladder, causality audits, purged walk-forward evaluation, synthetic latent-truth experiments, a public BTCUSDT pilot, committed result tables, tests, and a browser-oriented TypeScript port.
-
-> **Research status:** CAMASE is a methods and reproducibility project—not a production trading system and not a claim of alpha. The locked two-sided adaptor does not consistently beat simpler covariance baselines on the current generator; that negative result is reported rather than tuned away.
-
-**Manuscript:** [PAPER.md](PAPER.md) · **Methods card:** [METHODS.md](METHODS.md) · **Published outputs:** [results/](results/)  
-**Authors:** T. Shrikar, K. Sri Deepshikha, M. Mohith Srinivasa · ECE Batch 118  
-**Guide:** Dr. Sai Krishna
+Manuscript: [PAPER.md](PAPER.md)  
+Methods Card: [METHODS.md](METHODS.md)  
+Research Status: **Experimental / Reproducible Artifact**
 
 ---
 
-## Abstract
+## What is CAMASE?
 
-High-frequency log-prices mix microstructure noise with genuine repricing events. A fixed-covariance Kalman filter may suppress noise only by accepting additional lag, while a scalar adaptive filter does not identify which temporal scales justify changing process or measurement uncertainty.
+CAMASE is an online state-estimation pipeline designed for financial observations where **microstructure noise and genuine repricing occur at different temporal scales**.
 
-CAMASE studies whether a causal, undecimated wavelet cascade can separate short-scale and long-scale energy online. Short-scale energy updates measurement noise \(R_t\); long-scale energy updates process acceleration variance \(\sigma_{a,t}^2\). These covariances drive a numerically stable Kalman estimator, while an independently frozen shadow filter supplies a normalized-innovation-squared statistic for regime gating. The complete pipeline is evaluated against moving-average, static/adaptive Kalman, IMM, UKF, single-scale, gated, and deliberately leaky controls.
+Conventional estimators force a difficult choice:
 
-The contribution is methodological: every online coefficient is auditable for future leakage, evaluation is split according to whether latent truth is available, and unfavorable comparisons remain part of the published artifact.
+1. **Strong smoothing**, which rejects noisy ticks but reacts slowly to real market movement.
+2. **Fast tracking**, which responds to repricing but also follows transient microstructure noise.
+
+CAMASE uses a strictly causal à trous wavelet cascade to measure energy across scales. Short-scale energy adapts measurement uncertainty \(R_t\), while long-scale energy adapts process uncertainty \(Q_t\). A Joseph-form Kalman filter then estimates latent level and velocity, and an independent shadow filter determines whether the system should trade or enter a HOLD state.
+
+The project is built around a simple rule: **no performance claim without an executable causality and evaluation contract**.
 
 ---
 
 ## Why CAMASE?
 
-| Research requirement | Common failure mode | CAMASE approach |
+| Capability | Standard Adaptive Filters | CAMASE |
 | :--- | :--- | :--- |
-| **Online multiscale information** | Centered or periodic wavelets leak future samples | Causal FIR à trous cascade with explicit support and warm-up |
-| **Adaptive uncertainty** | One scalar is adjusted without scale attribution | High-frequency energy maps to \(R_t\); low-frequency energy maps to \(Q_t\) |
-| **Numerical stability** | Covariance loses symmetry or positive semidefiniteness | Joseph-form covariance update |
-| **Regime detection** | The adaptive filter cancels its own innovation signal | Frozen shadow filter drives the NIS/CUSUM gate |
-| **Honest evaluation** | Latent-state metrics are reported on market data without truth | Track A uses synthetic latent truth; Track B uses prediction/economic metrics only |
-| **Leakage control** | Batch preprocessing contaminates walk-forward tests | Bitwise causality audits, purge, embargo, and prefix execution |
-| **Research transparency** | Weak baselines or negative findings disappear | M0–M9 ladder, leaky twins, locked defaults, committed JSON outputs |
+| **Multiscale awareness** | Adapt one covariance from aggregate innovations. | Separates short-scale measurement noise from long-scale state movement. |
+| **Online causality** | Batch transforms may use future observations or periodic boundaries. | **Causal FIR à trous cascade** with explicit support, warm-up, and no periodic extension. |
+| **Regime detection** | Adaptation can suppress the innovations used to detect change. | **Frozen shadow filter** provides an independent NIS and CUSUM signal. |
+| **Leakage protection** | Causality is assumed from implementation details. | **Bitwise future-smash and streaming-prefix audits** test it directly. |
+| **Evaluation** | Latent-state metrics may be mixed with real-market metrics. | **Dual-track protocol:** truth-aware simulation and truth-free market evaluation. |
+| **Baseline quality** | Proposed method is compared only with weak references. | Full **M0–M9 ladder**, return-domain checks, IMM, UKF, and leaky twins. |
+| **Research integrity** | Hyperparameters or weak outcomes may be hidden. | Locked defaults, committed JSON tables, deterministic seeds, and negative results. |
 
 ---
 
-## Contributions
+## System
 
-1. **Causal multiscale covariance adaptation** — a streaming db4 à trous cascade converts scale-specific energy into bounded updates of measurement and process uncertainty.
-2. **Executable causality contract** — future-smash and streaming-prefix audits test the live implementation bit-for-bit; a circular twin acts as a positive leakage control.
-3. **Shadow innovation gate** — regime evidence is computed using fixed nominal covariances so the adaptor cannot trivially normalize away its own alarms.
-4. **Dual-track evaluation** — state-recovery claims are restricted to synthetic paths with latent truth, while market data is assessed with one-step prediction and costed walk-forward metrics.
-5. **Refutable baseline ladder** — simple and advanced alternatives are evaluated under locked defaults, including results where M2 or M8 outperform the proposed M6 adaptor.
-6. **Reproducible artifact** — deterministic seeds, hash-tracked datasets, tests, command-line experiments, and committed machine-readable tables support independent inspection.
+- **Causal Wavelet Engine**: Streaming Daubechies-4 à trous decomposition over four scales.
+- **Two-Sided Adaptation**: Short-scale energy controls \(R_t\); long-scale energy controls \(\sigma_{a,t}^2\).
+- **Stable State Estimation**: Integrated random-walk Kalman filter with Joseph covariance updates.
+- **Shadow-NIS Gate**: Fixed-covariance innovations drive chi-square, persistence, and CUSUM checks.
+- **Model Ladder**: Moving average, static KF, classical adaptive filters, wavelet variants, IMM, and UKF.
+- **Causality Audits**: Bitwise checks against future leakage and streaming inconsistency.
+- **Dual-Track Evaluation**: Heston-with-jumps latent-truth studies and public BTCUSDT walk-forward tests.
+- **Reproducible Results**: Hash-tracked data, frozen seeds, tests, and committed machine-readable outputs.
 
 ---
 
-## Method
-
-### Signal and state model
-
-The observation is log-price:
-
-\[
-y_t = \log \pi_t.
-\]
-
-The integrated random-walk state contains latent level and velocity. A causal wavelet cascade decomposes the observation into detail coefficients \(D_{j,t}\) and a coarse residual without periodic extension.
-
-For a Daubechies-4 filter of length \(L=8\), the support at scale \(j\) is
-
-\[
-L_j = (2^j-1)(L-1)+1.
-\]
-
-With \(J=4\), the supports are \(8,22,50,106\) samples. Combined with a 64-sample variance window, the online warm-up is **169 samples**.
-
-### Adaptive covariance map
-
-The locked paper profile uses short scales \(\{1,2\}\) for measurement noise and long scales \(\{3,4\}\) for process noise:
-
-\[
-R_t = R_0\,\operatorname{clip}\left[\left(\frac{E_t^H}{\bar E_t^H}\right)^\alpha\right],
-\qquad
-\sigma_{a,t}^2 = \sigma_{a,0}^2\,\operatorname{clip}\left[\left(\frac{E_t^L}{\bar E_t^L}\right)^\beta\right].
-\]
-
-The default profile fixes \(\lambda=0.995\), \(\alpha=\beta=1\), a \(10\times\) clip, \(R_0=1.2\times10^{-7}\), and \(\sigma_{a,0}^2=2.5\times10^{-7}\). See [`camase/config.py`](camase/config.py) for the complete configuration contract.
-
-### Regime gate
-
-A shadow filter remains frozen at the nominal \((R_0,\sigma_{a,0}^2)\). Its innovations feed a 60-sample NIS window, a chi-square threshold, 3-of-5 persistence, and CUSUM parameters \((\kappa,H)=(1.6,36)\). This separates covariance adaptation from regime evidence.
-
-### End-to-end flow
+## How It Works
 
 ```mermaid
-flowchart LR
-    A["Price stream"] --> B["Log transform"]
-    B --> C["Causal à trous db4 cascade"]
-    C --> D["Short-scale energy Eᴴ"]
-    C --> E["Long-scale energy Eᴸ"]
-    D --> F["Adaptive measurement noise Rₜ"]
-    E --> G["Adaptive process noise Qₜ"]
-    F --> H["Joseph-form IRW Kalman filter"]
-    G --> H
-    B --> I["Frozen shadow filter"]
-    I --> J["NIS + persistence + CUSUM"]
-    J --> K["Trade / HOLD gate"]
-    H --> L["State estimate"]
-    K --> M["Costed evaluation"]
-    L --> M
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart TD
+    A["📡 1. MARKET OBSERVATION\nPrice is converted to log-price"] --> B["🌊 2. CAUSAL MULTISCALE ANALYSIS\nStreaming db4 à trous cascade separates four temporal scales"]
+    B --> C["⚙️ 3. COVARIANCE ADAPTATION\nShort-scale energy updates Rₜ\nLong-scale energy updates Qₜ"]
+    C --> D["📐 4. STATE ESTIMATION\nJoseph-form IRW Kalman filter estimates latent level and velocity"]
+    A --> E["🛡 5. SHADOW MONITOR\nFrozen nominal filter produces independent NIS evidence"]
+    E --> F["🚦 6. REGIME GATE\nChi-square window, 3-of-5 persistence, and CUSUM produce TRADE or HOLD"]
+    D --> G["🧪 7. EVALUATION\nCausality audits, latent-truth metrics, and costed walk-forward tests"]
+    F --> G
+
+    style A fill:#0e1013,stroke:#6ea8fe,color:#ece9e3
+    style B fill:#10241b,stroke:#3fcf8a,color:#ece9e3
+    style C fill:#10241b,stroke:#3fcf8a,color:#ece9e3
+    style D fill:#150a2b,stroke:#9945ff,color:#ece9e3
+    style E fill:#241b0f,stroke:#f0ad4e,color:#ece9e3
+    style F fill:#241b0f,stroke:#f0ad4e,color:#ece9e3
+    style G fill:#0e1013,stroke:#6ea8fe,color:#ece9e3
+```
+
+The live path never uses centered coefficients or circular extension. With db4, \(J=4\), and a 64-sample variance window, CAMASE enforces a **169-sample warm-up** before scoring or acting on the estimator.
+
+---
+
+## Architecture
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart TB
+    subgraph INPUTS["📊 DATA & GENERATORS"]
+        HESTON["Heston-with-jumps\nTracks A1 / A2 / A3"]
+        BTC["BTCUSDT 1-minute klines\nPublic Binance API"]
+        SYNTH["Offline synthetic BTC-like sample"]
+    end
+
+    subgraph ENGINE["🧠 PYTHON RESEARCH ENGINE"]
+        WAVELET["camase/wavelet.py\nCausal à trous cascade"]
+        ADAPT["camase/adaptation.py\nMultiscale Rₜ / Qₜ mapping"]
+        FILTERS["camase/kalman.py · imm.py · ukf.py\nState estimators"]
+        GATE["camase/gate.py\nShadow-NIS regime gate"]
+        MODELS["camase/models.py\nM0–M9 ladder"]
+    end
+
+    subgraph VALIDATION["🔬 VALIDATION & REPORTING"]
+        AUDITS["camase/audits.py\nCausality contract"]
+        WF["camase/walkforward.py\nPurge + embargo evaluation"]
+        RESULTS["results/*.json\nPublished tables"]
+        TESTS["tests/\nRegression and method tests"]
+    end
+
+    subgraph LAB["🖥 BROWSER LAB"]
+        TS["src/lib/camase\nTypeScript port"]
+        ROUTES["src/routes\nLab · Audits · Ablation · Results · Paper"]
+    end
+
+    HESTON --> ENGINE
+    BTC --> ENGINE
+    SYNTH --> ENGINE
+    WAVELET --> ADAPT --> FILTERS --> GATE --> MODELS
+    ENGINE --> AUDITS
+    ENGINE --> WF
+    AUDITS --> RESULTS
+    WF --> RESULTS
+    ENGINE --> TESTS
+    RESULTS --> TS --> ROUTES
+
+    style INPUTS fill:#0e1013,stroke:#6ea8fe,color:#ece9e3
+    style ENGINE fill:#150a2b,stroke:#9945ff,color:#ece9e3
+    style VALIDATION fill:#10241b,stroke:#3fcf8a,color:#ece9e3
+    style LAB fill:#241b0f,stroke:#f0ad4e,color:#ece9e3
 ```
 
 ---
 
-## Baseline ladder
+## Estimator Configuration
 
-| ID | Model | Role |
+The locked paper profile is defined in [`camase/config.py`](camase/config.py).
+
+| Parameter | Value | Purpose |
 | :--- | :--- | :--- |
-| `M0` | Moving-average baseline | Non-state-space reference |
-| `M1` | Static Kalman filter | Fixed-covariance baseline |
-| `M2` | Rolling-\(\sigma\) measurement noise | Simple adaptive \(R_t\) baseline |
-| `M3` | Innovation-based adaptive estimation | Classical adaptive baseline |
-| `M4` | Sage–Husa | Joint covariance adaptation |
-| `M4b` | One-sided adaptive KF | Ratcheting adaptive baseline |
-| `M5` | Single-scale wavelet adaptor | Ablation of multiscale attribution |
-| `M6` | Two-sided multiscale adaptor | Primary CAMASE estimator |
-| `M7` | Gated M6 | M6 with shadow-NIS HOLD logic |
-| `M8` | Interacting multiple model | Discrete covariance-regime baseline |
-| `M9` | Unscented Kalman filter | Nonlinear-filter reference on near-linear observation |
-| `M6r` | Return-domain M6 | Specification check |
-| `M5′–M7′` | Circular/centered twins | Deliberately leaky positive controls |
+| Wavelet | `db4` | Four-scale causal decomposition |
+| Ring buffer | `512` | Streaming coefficient history |
+| Variance window | `64` | Local scale-energy estimation |
+| Wavelet levels | `J = 4` | Short/long scale separation |
+| High scales | `{1, 2}` | Measurement-noise adaptation |
+| Low scales | `{3, 4}` | Process-noise adaptation |
+| Warm-up | `169` bars | Largest support plus variance history |
+| EWMA decay | `λ = 0.995` | Reference energy tracking |
+| Exponents | `α = β = 1` | Covariance response |
+| Covariance clip | `10×` | Bounds adaptive excursions |
+| NIS window | `60` | Shadow innovation monitoring |
+| Persistence | `3 of 5` | Regime confirmation |
+| CUSUM | `κ = 1.6`, `H = 36` | Persistent-change detection |
+| Trading cost | `20 bp` round trip | Costed economic evaluation |
+
+The `review2` profile is a labeled sensitivity experiment. It does not replace or retrospectively tune the paper defaults.
 
 ---
 
-## Evaluation protocol
+## Model Ladder
 
-### Track A — latent-truth simulation
-
-Heston-with-jumps paths provide observable latent truth under three regimes:
-
-- **A1:** null / false-alarm study
-- **A2:** regime-switching evaluation
-- **A3:** stress and scheduled-jump evaluation
-
-Valid metrics include price-state RMSE, velocity RMSE, SNR gain, mean NIS, jump hits/misses, and detection delay.
-
-### Track B — public BTCUSDT pilot
-
-The committed dataset contains **6,000 BTCUSDT one-minute klines** fetched from Binance's public API without an API key. Since latent state is unknown, Track B reports one-step MSPE, time in market, drawdown, trade count, and per-bar Sharpe after a **20 bp round-trip cost**. It does **not** report latent-state RMSE or SNR.
-
-### Walk-forward controls
-
-- Expanding-prefix execution
-- Purge equal to the 169-sample warm-up
-- Embargo equal to the fourth-scale support, \(L_4=106\)
-- Four test folds in the committed Track B run
-- Deflated Sharpe evaluated against the complete trial log
+| Model | Estimator | Purpose | Status |
+| :--- | :--- | :--- | :--- |
+| `M0` | Moving average | Non-state-space reference | **IMPLEMENTED** |
+| `M1` | Static Kalman filter | Fixed-covariance baseline | **IMPLEMENTED** |
+| `M2` | Rolling-σ adaptive R | Simple adaptive baseline | **IMPLEMENTED** |
+| `M3` | Innovation-based adaptive estimation | Classical adaptive baseline | **IMPLEMENTED** |
+| `M4` | Sage–Husa | Joint covariance adaptation | **IMPLEMENTED** |
+| `M4b` | One-sided adaptive KF | Ratcheting covariance baseline | **IMPLEMENTED** |
+| `M5` | Single-scale wavelet KF | Scale-attribution ablation | **IMPLEMENTED** |
+| `M6` | Two-sided CAMASE | Primary multiscale estimator | **IMPLEMENTED** |
+| `M7` | Gated CAMASE | M6 plus shadow-NIS HOLD logic | **IMPLEMENTED** |
+| `M8` | Interacting multiple model | Discrete covariance-regime baseline | **IMPLEMENTED** |
+| `M9` | Unscented Kalman filter | Nonlinear-filter reference | **IMPLEMENTED** |
+| `M6r` | Return-domain CAMASE | Observation-domain check | **IMPLEMENTED** |
+| `M5′–M7′` | Circular twins | Deliberately leaky controls | **AUDIT CONTROL** |
 
 ---
 
-## Published findings
+## Causality Audits
 
-### Locked Track A2 run
+CAMASE makes causality executable rather than descriptive:
 
-The committed seed-42 run uses 1,800 observations after the same 169-sample warm-up contract.
-
-| Model | Price RMSE | SNR (dB) | Mean NIS | One-step MSPE |
-| :--- | ---: | ---: | ---: | ---: |
-| M1 | 3.278e-4 | 0.063 | 1.987 | 1.451e-6 |
-| M2 | 3.842e-4 | -1.206 | 0.429 | 5.861e-7 |
-| M6 | 3.750e-4 | -0.797 | 2.264 | 7.732e-7 |
-| M7 | 3.750e-4 | -0.797 | 2.264 | 7.732e-7 |
-| **M8** | **2.991e-4** | **0.866** | **0.734** | 8.481e-7 |
-| M9 | 3.278e-4 | 0.063 | 1.987 | 1.451e-6 |
-
-### Robustness and diagnostics
-
-- Across eight A2 seeds with \(n=1,200\), mean SNR was **-2.70 dB (M2)**, **-3.62 dB (M6)**, **-3.57 dB (M6r)**, and **+0.25 dB (M8)**.
-- M8 beat M2 on all eight robustness seeds; M6 beat M2 on three of eight.
-- Audits A and B pass bit-exactly; the circular twin differs as intended under Audit C.
-- On the A3 diagnostic path, all five scheduled jumps were flagged within 20 bars, but the non-jump HOLD fraction was approximately **0.504**. Sensitivity and specificity must therefore be read together.
-- The measured 50% response delay on a controlled 200 bp step was **0 bars**; this is a laboratory diagnostic, not an HFT execution-latency claim.
-
-### Track B pilot
-
-All committed costed, per-bar Sharpe estimates are negative. Across four purged folds, mean net Sharpe is approximately **-0.617 for M1** and **-0.621 for M6/M7**. The corresponding deflated-Sharpe probabilities are effectively zero. The pilot therefore provides **no evidence of tradable alpha**.
-
-Machine-readable values and fold-level outputs are available in [`results/*.json`](results/).
-
----
-
-## Causality audits
-
-CAMASE treats causality as a testable software property:
-
-- **Audit A — future smash:** mutate every sample after time \(t\), recompute, and require coefficients at \(t\) to remain bitwise identical.
-- **Audit B — streaming/prefix equivalence:** require the streaming implementation to equal a fresh filter run on every available prefix.
-- **Audit C — positive leakage control:** allow the circular centered twin to differ, then quantify the downstream economic difference instead of treating non-causality as an abstract warning.
-
-Run the audit suite with:
+- **Audit A — Future Smash**: Replace all observations after time \(t\), recompute the transform, and require every coefficient at \(t\) to remain bitwise identical.
+- **Audit B — Streaming Prefix**: Compare the online stream against a fresh filter run on each available prefix; outputs must match bit-for-bit.
+- **Audit C — Circular Twin**: Run a deliberately non-causal centered/circular implementation and require a measurable difference. Its downstream economic effect is reported as the price of leakage.
 
 ```bash
 python3 -m camase --audits
 ```
 
+Audits A and B pass on the committed implementation. Audit C detects the leaky twin as designed.
+
 ---
 
-## Getting started
+## Evaluation
+
+CAMASE separates experiments according to what can be measured honestly.
+
+### Track A — Latent-Truth Simulation
+
+Heston-with-jumps paths expose the hidden state and support RMSE, SNR, NIS, jump detection, and delay analysis.
+
+| Track | Scenario | Primary use |
+| :--- | :--- | :--- |
+| `A1` | Null regime | False-alarm calibration |
+| `A2` | Regime path | State-estimation and ablation study |
+| `A3` | Stress and scheduled jumps | Gate sensitivity and detection delay |
+
+### Track B — Public Market Pilot
+
+The committed Track B file contains **6,000 BTCUSDT one-minute bars** from Binance's public API. Since the true latent state is unavailable, evaluation is limited to one-step MSPE, time in market, trade count, drawdown, and costed Sharpe.
+
+Walk-forward evaluation uses:
+
+- expanding training prefixes;
+- a 169-bar purge;
+- a 106-bar embargo;
+- four committed test folds;
+- 20 bp round-trip costs; and
+- deflated Sharpe over the complete trial log.
+
+---
+
+## Published Results
+
+### Track A2 — Locked Seed 42
+
+| Model | Price RMSE | SNR (dB) | Mean NIS | MSPE |
+| :--- | ---: | ---: | ---: | ---: |
+| `M1` | 3.278e-4 | 0.063 | 1.987 | 1.451e-6 |
+| `M2` | 3.842e-4 | -1.206 | 0.429 | **5.861e-7** |
+| `M6` | 3.750e-4 | -0.797 | 2.264 | 7.732e-7 |
+| `M7` | 3.750e-4 | -0.797 | 2.264 | 7.732e-7 |
+| `M8` | **2.991e-4** | **0.866** | **0.734** | 8.481e-7 |
+| `M9` | 3.278e-4 | 0.063 | 1.987 | 1.451e-6 |
+
+### Robustness
+
+Across eight A2 seeds at \(n=1,200\):
+
+| Model | Mean SNR | Wins vs. M2 |
+| :--- | ---: | ---: |
+| `M2` | -2.70 dB | — |
+| `M6` | -3.62 dB | 3 / 8 |
+| `M6r` | -3.57 dB | 2 / 8 |
+| `M8` | **+0.25 dB** | **8 / 8** |
+
+The locked M6 adaptor does **not** reliably outperform M2 on the current generator. M8 is the strongest covariance-family result in the robustness panel. This is a published result, not a hidden failure.
+
+### Gate and Market Findings
+
+- A3 scheduled jumps: **5/5 detected** within the 20-bar horizon.
+- A3 non-jump HOLD fraction: approximately **0.504**, so sensitivity is not equivalent to specificity.
+- Controlled 200 bp step: measured 50% response delay of **0 bars**.
+- Track B mean costed per-bar Sharpe: approximately **-0.617 for M1** and **-0.621 for M6/M7**.
+- The Track B pilot provides **no evidence of tradable alpha** after costs.
+
+All source tables are committed in [`results/`](results/).
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.10+
-- `pip`
+- Python >= 3.10
+- pip
 - Git
 
 ### Installation
@@ -222,114 +275,81 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
 ```
 
-### Verify the artifact
+### Testing & Audits
 
 ```bash
 python3 -m pytest tests/ -q
 python3 -m camase --audits
 ```
 
-### Run experiments
+### Experiments
 
 ```bash
-# Track A2 with selected models
+# Track A model comparison
 python3 -m camase --track A2 --models M1,M2,M6,M7,M8,M9 --n 2000
 
-# Ablation study
+# Full ablation
 python3 -m camase --ablation --track A2 --n 2000
 
-# Purged walk-forward study
+# Purged walk-forward evaluation
 python3 -m camase --walkforward --track A2 --n 2800
 
-# Pareto analysis
-python3 -m camase --pareto --track A2 --n 1600
-
-# Diagnostics
+# Diagnostic suite
 python3 -m camase --diagnostics --out results/diagnostics.json
 
-# Track B using the committed BTCUSDT window
+# Track B market pilot
 python3 -m camase --track-b --csv data/btc_usdt_1m.csv
+
+# Fetch a fresh public BTCUSDT window
+python3 -m camase --fetch-btc --pages 6 --csv data/btc_usdt_1m.csv
 ```
 
----
-
-## Reproducibility
-
-Regenerate the committed tables from the Python engine:
+### Reproduce Published Tables
 
 ```bash
 python3 scripts/reproduce_results.py
 ```
 
-The script writes Track A, ablation, walk-forward, Pareto, calibration, false-alarm, diagnostic, and Track B outputs to `results/`. The default experiment seed is **42** unless a robustness run states otherwise. Locked constants live in [`camase/config.py`](camase/config.py); the `review2` profile is a labeled sensitivity analysis and does not replace paper defaults.
-
-Fetch a fresh public BTCUSDT window with:
-
-```bash
-python3 -m camase --fetch-btc --pages 6 --csv data/btc_usdt_1m.csv
-```
-
-The loader writes a neighboring SHA-256 file. Keep the hash with any reported result. Network-free tests use the labeled synthetic fallback in `data/btc_sample.csv`.
+The script regenerates the committed Track A, ablation, walk-forward, Pareto, calibration, false-alarm, diagnostic, and Track B outputs.
 
 ---
 
-## Repository structure
+## Documentation
 
-```text
-camase/
-├── camase/                 # Python research engine and CLI
-│   ├── wavelet.py          # Causal à trous implementation
-│   ├── adaptation.py       # Multiscale covariance mapping
-│   ├── kalman.py           # Joseph-form IRW Kalman filter
-│   ├── gate.py             # Shadow-NIS persistence/CUSUM gate
-│   ├── models.py           # M0–M9 model ladder
-│   ├── audits.py           # Executable causality audits
-│   ├── walkforward.py      # Purged and embargoed evaluation
-│   └── diagnostics.py      # Delay, leakage, jump, robustness studies
-├── tests/                  # Audits, estimator, gate, Track B, IMM/UKF tests
-├── scripts/                # Reproduction entry points
-├── data/                   # Hash-tracked real and synthetic CSV inputs
-├── results/                # Committed JSON tables
-├── src/lib/camase/         # Browser-faithful TypeScript port
-├── src/routes/             # Lab, ablation, audits, results, and paper views
-├── PAPER.md                # Updated manuscript
-└── METHODS.md              # One-page viva methods card
-```
+For the full research specification, implementation details, and evidence, see:
+
+- [**Updated Manuscript**](PAPER.md) — Motivation, related work, method, protocol, findings, and limitations.
+- [**Methods Card**](METHODS.md) — One-page estimator, defaults, evaluation, and viva reference.
+- [**Published Results**](results/README.md) — How to interpret the committed JSON tables.
+- [**Track B Data**](data/README.md) — Dataset provenance, synthetic fallback, and SHA-256 rules.
+- [**Locked Configuration**](camase/config.py) — Paper and sensitivity profiles.
+- [**Causality Tests**](tests/test_audits.py) — Executable future-leakage contract.
 
 ---
 
-## Research integrity and limitations
+## Research Limitations
 
-- Track B covers only 6,000 one-minute bars—hours/days, not a market-scale historical study.
-- Heston-with-jumps is a controlled data-generating process, not an exchange order book.
-- M9 is evaluated on a nearly linear observation and should not be interpreted as evidence about strongly nonlinear market models.
-- The step-response experiment measures estimator behavior under a laboratory tone, not exchange, networking, or execution latency.
-- The default gate is conservative on A1 yet produces many non-jump HOLD states on A3.
-- Hyperparameters must not be changed after observing a test fold merely to reverse the baseline ranking.
-- Financial metrics are experimental outputs, not investment advice.
+- Track B contains 6,000 one-minute bars, not a market-scale historical sample.
+- Heston-with-jumps is a controlled generator, not an exchange order book.
+- M9 uses a nearly linear observation and is not a broad nonlinear-market claim.
+- Step-response delay is an estimator diagnostic, not an execution-latency benchmark.
+- The current gate is conservative under A1 and insufficiently specific under A3.
+- CAMASE is research software, not financial advice or a production trading system.
 
 ---
 
 ## Citation
-
-If you use this repository in academic work, cite the repository and manuscript:
 
 ```bibtex
 @software{shrikar2026camase,
   author  = {Shrikar, T. and Sri Deepshikha, K. and Mohith Srinivasa, M.},
   title   = {CAMASE: Causality-Audited Multiscale Adaptive State Estimation for High-Frequency Financial Time Series},
   year    = {2026},
-  url     = {https://github.com/ShrikarT/camase},
-  version = {2.1}
+  version = {2.1},
+  url     = {https://github.com/ShrikarT/camase}
 }
 ```
 
-## References
-
-The research spine includes Shensa (1992) and Quilty & Adamowski (2018) for wavelet causality; Renaud, Starck & Murtagh (2005) for wavelet/financial forecasting; Mehra (1970), Sage & Husa (1969), and Akhlaghi et al. (2017) for adaptive filtering; Aït-Sahalia, Mykland & Zhang (2005) for microstructure noise; and Bailey & López de Prado (2014) for deflated Sharpe. Full context is in [PAPER.md](PAPER.md).
-
 ---
 
-## License
-
-No open-source license is currently declared in this repository. Until a license is added, all rights remain with the copyright holders. Add an explicit license before encouraging reuse or redistribution.
+*CAMASE is an experimental state-estimation and causality-auditing system built for reproducible financial signal-processing research.*
