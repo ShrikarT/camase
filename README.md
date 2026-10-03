@@ -34,7 +34,7 @@ The project is built around a simple rule: **no performance claim without an exe
 | **Regime detection** | Adaptation can suppress the innovations used to detect change. | **Frozen shadow filter** provides an independent NIS and CUSUM signal. |
 | **Leakage protection** | Causality is assumed from implementation details. | **Bitwise future-smash and streaming-prefix audits** test it directly. |
 | **Evaluation** | Latent-state metrics may be mixed with real-market metrics. | **Dual-track protocol:** truth-aware simulation and truth-free market evaluation. |
-| **Baseline quality** | Proposed method is compared only with weak references. | Full **M0–M9 ladder**, return-domain checks, IMM, UKF, and leaky twins. |
+| **Baseline quality** | Proposed method is compared only with weak references. | Full **M0–M11 ladder**, return-domain checks, IMM, UKF, pre-averaging, wavelet-denoise, and leaky twins. |
 | **Research integrity** | Hyperparameters or weak outcomes may be hidden. | Locked defaults, committed JSON tables, deterministic seeds, and negative results. |
 
 ---
@@ -47,7 +47,7 @@ The project is built around a simple rule: **no performance claim without an exe
 - **Shadow-NIS Gate**: Fixed-covariance innovations drive chi-square, persistence, and CUSUM checks.
 - **Model Ladder**: Moving average, static KF, classical adaptive filters, wavelet variants, IMM, and UKF.
 - **Causality Audits**: Bitwise checks against future leakage and streaming inconsistency.
-- **Dual-Track Evaluation**: Heston-with-jumps latent-truth studies and public BTCUSDT walk-forward tests.
+- **Dual-Track Evaluation**: Latent-truth studies on three generators (A/B/C) and Heston tracks, plus public market walk-forward tests.
 - **Reproducible Results**: Hash-tracked data, frozen seeds, tests, and committed machine-readable outputs.
 
 ---
@@ -168,6 +168,8 @@ The `review2` profile is a labeled sensitivity experiment. It does not replace o
 | `M7` | Gated CAMASE | M6 plus shadow-NIS HOLD logic | **IMPLEMENTED** |
 | `M8` | Interacting multiple model | Discrete covariance-regime baseline | **IMPLEMENTED** |
 | `M9` | Unscented Kalman filter | Nonlinear-filter reference | **IMPLEMENTED** |
+| `M10` | Causal pre-averaging efficient price | Zhang–Mykland–Aït-Sahalia family baseline | **IMPLEMENTED** |
+| `M11` | MODWT soft-threshold denoise + KF | Wavelet-as-competitor baseline | **IMPLEMENTED** |
 | `M6r` | Return-domain CAMASE | Observation-domain check | **IMPLEMENTED** |
 | `M5′–M7′` | Circular twins | Deliberately leaky controls | **AUDIT CONTROL** |
 
@@ -195,7 +197,7 @@ CAMASE separates experiments according to what can be measured honestly.
 
 ### Track A — Latent-Truth Simulation
 
-Heston-with-jumps paths expose the hidden state and support RMSE, SNR, NIS, jump detection, and delay analysis.
+Heston-with-jumps paths expose the hidden state and support RMSE, SNR, NIS, jump detection, and delay analysis. Three additional generators run on the same 1-minute clock: **A** (block-varying microstructure noise + slow latent random walk), **B** (bid-ask bounce + tick rounding + sparse jumps), and **C** (Heston-with-jumps, the original Track A2) — see `camase/generators.py`.
 
 | Track | Scenario | Primary use |
 | :--- | :--- | :--- |
@@ -205,14 +207,14 @@ Heston-with-jumps paths expose the hidden state and support RMSE, SNR, NIS, jump
 
 ### Track B — Public Market Pilot
 
-The committed Track B file contains **6,000 BTCUSDT one-minute bars** from Binance's public API. Since the true latent state is unavailable, evaluation is limited to one-step MSPE, time in market, trade count, drawdown, and costed Sharpe.
+Two symbols × six months of public Binance 1-minute klines from the official archive (`data.binance.vision`, no key): **BTCUSDT and ETHUSDT, March–August 2026, 264,960 bars each, zero gaps** (`data/trackb_{BTC,ETH}USDT_1m.csv.gz` + `.sha256` sidecars; the original 6,000-bar file is kept in `data/` for provenance, superseded). Since the true latent state is unavailable, evaluation is limited to one-step MSPE, calibration, time in market, trade count, drawdown, and costed Sharpe — in that order, Sharpe last and never as the headline. Track B is a pilot, not evidence.
 
 Walk-forward evaluation uses:
 
 - expanding training prefixes;
 - a 169-bar purge;
 - a 106-bar embargo;
-- four committed test folds;
+- six committed test folds per symbol;
 - 20 bp round-trip costs; and
 - deflated Sharpe over the complete trial log.
 
@@ -244,12 +246,24 @@ Across eight A2 seeds at \(n=1,200\):
 
 The locked M6 adaptor does **not** reliably outperform M2 on the current generator. M8 is the strongest covariance-family result in the robustness panel. This is a published result, not a hidden failure.
 
+### Multi-generator results (50 seeds × 3 generators × 3 lengths)
+
+Paired Wilcoxon tests, M6 vs M2 / M8, on SNR gain (full table: `results/multigen.json`). Mean SNR at \(n=1800\):
+
+| Generator | M2 | M6 | M8 | M6 vs M2 | M6 vs M8 |
+| :--- | ---: | ---: | ---: | :--- | :--- |
+| `A` (block noise) | **+2.26** | +1.42 | +1.32 | −0.84 dB, 0/50 | +0.09 dB, 50/50 |
+| `B` (bounce+jumps) | +0.88 | **+1.26** | +1.26 | +0.14 dB, 50/50 | tie, n.s. |
+| `C` (Heston 1m) | −1.09 | −2.43 | **+0.92** | −1.37 dB, 7/50 | −3.29 dB, 0/50 |
+
+M6 beats rolling-σ only on generator B, where short-scale energy is measurement noise by construction. Thesis: scale-split adaptation is identified only when short-scale and long-scale energy are separable.
+
 ### Gate and Market Findings
 
-- A3 scheduled jumps: **5/5 detected** within the 20-bar horizon.
-- A3 non-jump HOLD fraction: approximately **0.504**, so sensitivity is not equivalent to specificity.
+- A3 scheduled jumps: **5/5 detected** within the 20-bar horizon — but the gate ROC (`results/gate_roc.json`, 12 configurations) shows the gate was already HOLD before 100% of A3 jumps with a 0.91 false-hold fraction on non-jump bars. The window-NIS statistic saturates under stress: the gate is a panic button, not a detector.
+- A3 non-jump HOLD fraction: approximately **0.504** on the diagnostic path (n=1800), so sensitivity is not equivalent to specificity.
 - Controlled 200 bp step: measured 50% response delay of **0 bars**.
-- Track B mean costed per-bar Sharpe: approximately **-0.617 for M1** and **-0.621 for M6/M7**.
+- Track B (BTC+ETH, 6 months each): best one-step MSPE is M2 on both symbols; costed per-bar Sharpe is **negative for every model** (−0.46 to −0.58) with deflated Sharpe 0.000.
 - The Track B pilot provides **no evidence of tradable alpha** after costs.
 
 All source tables are committed in [`results/`](results/).
@@ -297,8 +311,14 @@ python3 -m camase --walkforward --track A2 --n 2800
 # Diagnostic suite
 python3 -m camase --diagnostics --out results/diagnostics.json
 
-# Track B market pilot
-python3 -m camase --track-b --csv data/btc_usdt_1m.csv
+# Track B market pilot (2 symbols x 6 months)
+python3 -m camase.fetch_archive "BTCUSDT,ETHUSDT" "" data
+
+# Multi-generator statistics (50 seeds x 3 generators x 3 lengths)
+python3 -m camase.multigen results
+
+# Gate ROC (false alarms on A1 vs hit rate on A3)
+python3 -c "from camase.gate_roc import main; main('results/gate_roc.json')"
 
 # Fetch a fresh public BTCUSDT window
 python3 -m camase --fetch-btc --pages 6 --csv data/btc_usdt_1m.csv
@@ -307,10 +327,11 @@ python3 -m camase --fetch-btc --pages 6 --csv data/btc_usdt_1m.csv
 ### Reproduce Published Tables
 
 ```bash
-python3 scripts/reproduce_results.py
+python3 scripts/reproduce_results.py          # full, ~25 min (50-seed table)
+python3 scripts/reproduce_results.py --light  # CI-fast tables
 ```
 
-The script regenerates the committed Track A, ablation, walk-forward, Pareto, calibration, false-alarm, diagnostic, and Track B outputs.
+The script regenerates the committed Track A, ablation, walk-forward, Pareto, calibration, false-alarm, diagnostic, gate-ROC, identification, multi-generator, and Track B outputs.
 
 ---
 
@@ -329,11 +350,11 @@ For the full research specification, implementation details, and evidence, see:
 
 ## Research Limitations
 
-- Track B contains 6,000 one-minute bars, not a market-scale historical sample.
+- Track B is two crypto symbols over six months of 1-minute bars — a pilot, not a market study. No equity tape was reachable without keyed data.
 - Heston-with-jumps is a controlled generator, not an exchange order book.
 - M9 uses a nearly linear observation and is not a broad nonlinear-market claim.
 - Step-response delay is an estimator diagnostic, not an execution-latency benchmark.
-- The current gate is conservative under A1 and insufficiently specific under A3.
+- The current gate is conservative under A1 and saturates (always HOLD) under A3 stress.
 - CAMASE is research software, not financial advice or a production trading system.
 
 ---
