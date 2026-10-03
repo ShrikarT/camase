@@ -26,6 +26,10 @@ function AblationPage() {
             M6 must beat M2, not merely M1. M8 (IMM) and M9 (UKF) are covariance
             baselines, not wavelet models. Leaky twins (M5′) price look-ahead.
           </p>
+          <p className="mt-1 max-w-2xl font-mono text-[11px] text-fg-subtle">
+            Live in-browser demo — resimulates on every rerun. Not citable; the
+            committed numbers live in results/.
+          </p>
         </div>
         <div className="flex gap-2">
           {(["A1", "A2", "A3"] as TrackKind[]).map((k) => (

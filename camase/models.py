@@ -347,6 +347,83 @@ def run_m9_ukf(prices: np.ndarray, cfg: CamaseConfig) -> ModelRun:
     return ModelRun("M9", o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
 
 
+def run_m10_preavg(prices: np.ndarray, cfg: CamaseConfig) -> ModelRun:
+    """Causal pre-averaging efficient-price estimator (Zhang-Mykland-Ait-Sahalia family).
+
+    The pre-averaging kernel g(j) = min(j, W - j) over a trailing window of
+    W bars is the standard microstructure-robust smoother; here it is used
+    as a direct competitor for the efficient (latent) price rather than as
+    an integrated-variance input. If M6 cannot beat pre-averaging on
+    latent-path MSE on generator A, the wavelet-to-(R, Q) map is the wrong
+    use of the scales.
+    """
+    W = 32
+    y = np.log(np.maximum(prices, 1e-12))
+    n = y.size
+    o = _alloc(n)
+    g = np.minimum(np.arange(1, W + 1), np.arange(W, 0, -1)).astype(np.float64)
+    g /= g.sum()
+    pa = np.convolve(y, g, mode="full")[:n]
+    for t in range(n):
+        ready = t >= W - 1
+        o["rdy"][t] = ready
+        if not ready:
+            continue
+        o["p"][t] = pa[t]
+        o["v"][t] = pa[t] - pa[t - 1]
+        o["pred"][t] = pa[t - 1]
+        o["act"][t] = "TRADE"
+    return ModelRun("M10", o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
+
+
+def run_m11_wavelet_denoise(prices: np.ndarray, cfg: CamaseConfig) -> ModelRun:
+    """Causal MODWT soft-threshold denoise, then a static KF.
+
+    Wavelet as a *competitor* to the adaptor, not its input: detail
+    coefficients are soft-thresholded with the universal threshold estimated
+    causally (MAD of D1 over the trailing variance window), the signal is
+    reconstructed as y - sum(D_j) + sum(eta(D_j)), and a static IRW filter
+    smooths the result.
+    """
+    from .kalman import KalmanIRW
+
+    y = np.log(np.maximum(prices, 1e-12))
+    n = y.size
+    D = batch_causal_details(y, cfg.J)
+    k = cfg.k_var
+    thr_const = np.sqrt(2.0 * np.log(max(k, 2)))
+    o = _alloc(n)
+    kf = KalmanIRW()
+    F = transition(cfg.dt)
+    Q = process_cov(cfg.sigma_a0, cfg.dt)
+    bar = None
+    for t in range(n):
+        ready = t >= cfg.warmup
+        o["rdy"][t] = ready
+        if not ready:
+            kf.predict(F, Q)
+            kf.update_joseph(y[t], cfg.R0)
+            continue
+        win = D[0, t - k + 1 : t + 1]
+        sig = float(np.median(np.abs(win)) / 0.6745) if win.size else 0.0
+        thr = sig * thr_const
+        yhat = y[t]
+        for j in range(cfg.J):
+            d = float(D[j, t])
+            yhat += np.sign(d) * max(abs(d) - thr, 0.0) - d
+        pred = kf.one_step_pred(F)
+        kf.predict(F, Q)
+        kf.update_joseph(yhat, cfg.R0)
+        o["p"][t] = kf.x[0]
+        o["v"][t] = kf.x[1]
+        o["R"][t] = cfg.R0
+        o["sa"][t] = cfg.sigma_a0
+        o["nis"][t] = kf.last_nis
+        o["pred"][t] = pred
+        o["act"][t] = "TRADE"
+    return ModelRun("M11", o["p"], o["v"], o["R"], o["sa"], o["nis"], o["nis0"], o["act"], o["pred"], o["rdy"])
+
+
 RUNNERS: dict[str, Callable[[np.ndarray, CamaseConfig], ModelRun]] = {
     "M0": run_m0,
     "M1": run_static_kf,
@@ -363,6 +440,8 @@ RUNNERS: dict[str, Callable[[np.ndarray, CamaseConfig], ModelRun]] = {
     "M7'": lambda p, c: run_leaky_m6(p, c, gated=True),
     "M8": run_m8_imm,
     "M9": run_m9_ukf,
+    "M10": run_m10_preavg,
+    "M11": run_m11_wavelet_denoise,
 }
 
 
