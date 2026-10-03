@@ -8,6 +8,7 @@ claim live Binance.
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,7 +54,8 @@ def load_ohlcv_csv(path: str | Path) -> TrackBPath:
     if not path.is_file():
         raise FileNotFoundError(path)
     rows = []
-    with path.open(newline="") as f:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, mode="rt", newline="") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames is None:
             raise ValueError("CSV has no header")

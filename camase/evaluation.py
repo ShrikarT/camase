@@ -65,21 +65,26 @@ def run_ablation(
     return out
 
 
-def traces_for_dashboard(n: int = 1600, track: str = "A2", seed: int = 42) -> dict:
-    """Compact JSON-able traces for the web lab (M7 vs raw vs latent)."""
+def traces_for_dashboard(n: int = 1400, track: str = "A2", seed: int = 42, gated: bool = True) -> dict:
+    """Compact JSON-able traces for the web lab (M7 vs raw vs latent).
+
+    The lab replays this committed fixture; it does not simulate live.
+    """
     from .pipeline import CamaseEngine
 
     cfg = DEFAULT_CONFIG
     path = generate_heston(n=n, track=track, seed=seed)  # type: ignore[arg-type]
-    eng = CamaseEngine(cfg, gated=True)
+    eng = CamaseEngine(cfg, gated=gated)
     rec = []
-    for px, lat, jf in zip(path.price, path.latent, path.jump_flags):
+    for px, lat, jf, rf in zip(path.price, path.latent, path.jump_flags, path.regime_flags):
         o = eng.step(float(px))
         rec.append(
             {
                 "y": o.y,
                 "latent": float(lat),
+                "price": float(px),
                 "p_hat": o.p_hat,
+                "v_hat": o.v_hat,
                 "R": o.R_t,
                 "sa2": o.sigma_a2,
                 "rho": o.rho,
@@ -88,9 +93,19 @@ def traces_for_dashboard(n: int = 1600, track: str = "A2", seed: int = 42) -> di
                 "nu": o.nu,
                 "gamma": o.gamma,
                 "cusum": o.cusum,
+                "alarm": bool(o.alarm),
                 "action": o.action,
                 "ready": o.ready,
                 "jump": bool(jf),
+                "regime": bool(rf),
             }
         )
-    return {"n": n, "track": track, "warmup": cfg.warmup, "series": rec}
+    return {
+        "n": n,
+        "track": track,
+        "seed": seed,
+        "gated": gated,
+        "warmup": cfg.warmup,
+        "generated_by": "python engine traces_for_dashboard; replay only, not live tape",
+        "series": rec,
+    }

@@ -6,3 +6,5 @@ node_modules/
 .output/
 .tanstack/
 dist/
+
+results/multigen_checkpoint.json
